@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>软件工程基础复习系统</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f5f5; color: #333; }
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 220px; background: #1e40af; color: #fff; padding: 20px 0; }
+.sidebar h1 { font-size: 18px; padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,.2); }
+.sidebar h1 span { font-size: 12px; display: block; color: rgba(255,255,255,.6); margin-top: 4px; }
+.nav-item { padding: 12px 20px; cursor: pointer; transition: all .2s; font-size: 14px; }
+.nav-item:hover { background: rgba(255,255,255,.1); }
+.nav-item.active { background: rgba(255,255,255,.2); }
+.main { flex: 1; padding: 24px; }
+.page { display: none; }
+.page.active { display: block; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.stat-card .label { font-size: 13px; color: #666; }
+.stat-card .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+.card { background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin-bottom: 16px; padding: 20px; }
+.lecture-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.lecture-tab { padding: 8px 16px; border-radius: 20px; border: 1px solid #ddd; cursor: pointer; font-size: 13px; background: #fff; }
+.lecture-tab.active { background: #1e40af; color: #fff; border-color: #1e40af; }
+.k-card { border-left: 4px solid #1e40af; padding: 16px; margin-bottom: 12px; background: #fff; border-radius: 0 8px 8px 0; box-shadow: 0 1px 3px rgba(0,0,0,.1); cursor: pointer; }
+.k-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+.k-card .k-title { font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+.k-card .k-def { font-size: 13px; color: #666; }
+.btn { padding: 10px 24px; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; }
+.btn-primary { background: #1e40af; color: #fff; }
+.btn-outline { background: #fff; border: 1px solid #ddd; }
+.quiz-option { padding: 14px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; margin-bottom: 10px; }
+.quiz-option:hover { border-color: #1e40af; }
+.quiz-option.selected { border-color: #1e40af; background: #eff6ff; }
+.quiz-option.correct { border-color: #10b981; background: #ecfdf5; }
+.quiz-option.wrong { border-color: #ef4444; background: #fef2f2; }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <h1>软件工程基础<span>2026春 复习系统</span></h1>
+    <div class="nav-item active" onclick="showPage('home')">首页</div>
+    <div class="nav-item" onclick="showPage('knowledge')">知识卡片</div>
+    <div class="nav-item" onclick="showPage('quiz')">刷题模式</div>
+    <div class="nav-item" onclick="showPage('wrong')">错题本</div>
+  </nav>
+  <div class="main">
+    <div class="page active" id="page-home">
+      <h2 style="margin-bottom:24px">复习概览</h2>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="label">知识卡片</div><div class="value" style="color:#1e40af" id="statCards">0</div></div>
+        <div class="stat-card"><div class="label">题库总量</div><div class="value" style="color:#10b981" id="statQuiz">0</div></div>
+        <div class="stat-card"><div class="label">已答题数</div><div class="value" style="color:#f59e0b" id="statDone">0</div></div>
+        <div class="stat-card"><div class="label">错题数</div><div class="value" style="color:#ef4444" id="statWrong">0</div></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:16px">课程结构</h3>
+        <div id="courseStructure"></div>
+      </div>
+    </div>
+    <div class="page" id="page-knowledge">
+      <h2 style="margin-bottom:24px">知识卡片</h2>
+      <div class="lecture-tabs" id="lectureTabs"></div>
+      <div id="knowledgeList"></div>
+    </div>
+    <div class="page" id="page-quiz">
+      <h2 style="margin-bottom:24px">刷题模式</h2>
+      <div id="quizContent"></div>
+    </div>
+    <div class="page" id="page-wrong">
+      <h2 style="margin-bottom:24px">错题本</h2>
+      <div id="wrongList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const knowledgeCards = [
+  {id:"k1",lecture:1,title:"软件的定义与特点",definition:"软件是一种人工制品，也是一种抽象的逻辑制品。软件及其生产不受物理定律约束，不会因为常年运行而出现物理层面的老化或磨损。",keyPoints:["软件是逻辑制品，不是物理制品","软件不会物理老化或磨损，但会逻辑老化","软件生产不受物理定律约束"]},
+  {id:"k2",lecture:1,title:"软件分类",definition:"软件按用途和功能分为：系统软件、应用软件和支撑软件。",keyPoints:["系统软件：管理和控制计算机硬件与系统资源","应用软件：面向特定应用领域，为用户完成具体任务","支撑软件：协助开发和维护其他软件的工具"]},
+  {id:"k3",lecture:2,title:"软件工程",definition:"软件工程是将系统化、规范化、可度量的方法应用于软件的开发、运行和维护的过程。",keyPoints:["三要素：过程、工具、方法","系统化、规范化、可度量","应用于开发、运行和维护全过程"]},
+  {id:"k4",lecture:2,title:"高内聚低耦合",definition:"高内聚指模块内部元素紧密相关，低耦合指模块间依赖关系尽量少。这是软件设计的基本原则。",keyPoints:["高内聚：模块内部功能紧密相关","低耦合：模块间依赖尽量少","有助于提高可维护性和可复用性"]},
+  {id:"k5",lecture:3,title:"瀑布模型",definition:"瀑布模型是一种线性顺序的软件过程模型，各阶段按固定顺序依次进行。",keyPoints:["线性顺序进行","阶段：需求→设计→编码→测试→维护","局限：难以适应需求变化"]},
+  {id:"k6",lecture:3,title:"原型",definition:"原型是软件的一个早期可运行版本，用于验证需求或技术方案的可行性。",keyPoints:["早期可运行版本","用于验证需求或技术方案","帮助明确用户需求"]},
+  {id:"k7",lecture:4,title:"软件需求",definition:"软件需求描述了软件应该做什么、不做什么，以及软件的质量和约束要求。",keyPoints:["功能需求：软件应该做什么","非功能需求：性能、安全性、可用性等","开发约束需求：成本、进度、技术选型等"]},
+  {id:"k8",lecture:4,title:"需求工程",definition:"需求工程是一个包括需求获取、需求分析、需求验证和需求管理的连续过程。",keyPoints:["需求获取：从利益相关者收集需求","需求分析：分析和整理需求","需求验证：确认需求的正确性和完整性","需求管理：管理需求变更"]},
+  {id:"k9",lecture:5,title:"软件设计的一般过程",definition:"软件设计按顺序包括：体系结构设计、用户界面设计、详细设计。",keyPoints:["1. 体系结构设计","2. 用户界面设计","3. 详细设计：用例设计→类设计→数据设计"]},
+  {id:"k10",lecture:6,title:"软件测试原理",definition:"软件测试是通过运行程序代码来发现程序中潜藏缺陷的过程。测试可以证明软件存在缺陷，但不能证明软件是正确的。",keyPoints:["通过运行程序发现缺陷","能证明存在缺陷，不能证明正确","测试对象是程序代码"]},
+  {id:"k11",lecture:6,title:"测试用例四元组",definition:"一个测试用例由四元组(T, S, I, O)表示。",keyPoints:["T：测试用例标识","S：前置条件","I：测试输入","O：预期输出"]},
+  {id:"k12",lecture:6,title:"白盒测试-基本路径测试",definition:"基本路径测试是一种白盒测试方法，通过计算圈复杂度确定基本路径集合。",keyPoints:["圈复杂度 = 边数 - 节点数 + 2","每条基本路径对应一个测试用例","需覆盖所有节点和所有边"]},
+  {id:"k13",lecture:6,title:"黑盒测试-等价类法",definition:"等价类划分法将输入数据划分为若干等价类，从每个等价类中选取代表值作为测试用例。",keyPoints:["划分有效等价类（合法输入）","划分无效等价类（非法输入）","有效等价类：用尽可能少的用例覆盖","无效等价类：每个无效等价类单独一个用例"]},
+  {id:"k14",lecture:7,title:"软件维护类型",definition:"软件维护包括纠正性维护、改善性维护和适应性维护。",keyPoints:["纠正性维护：修复已发现的缺陷","改善性维护：改进性能和质量属性","适应性维护：适应变化的运行环境"]}
+];
+
+const quizBank = [
+  {id:"c1",type:"choice",lecture:1,question:"下面选项中，哪一项不属于软件工程的三要素",options:{A:"过程",B:"工具",C:"开发",D:"方法"},answer:"C",explanation:"软件工程三要素是：过程、工具、方法。"},
+  {id:"c2",type:"choice",lecture:1,question:"软件按用途和功能分类，以下哪个选项正确？",options:{A:"系统软件、应用软件和支撑软件",B:"开源软件、闭源软件和混合软件",C:"传统软件、云计算软件和边缘计算软件",D:"商业软件、免费软件和试用软件"},answer:"A",explanation:"软件按用途和功能分为系统软件、应用软件和支撑软件三类。"},
+  {id:"c3",type:"choice",lecture:6,question:"测试用例四元组(T,S,I,O)中，S表示什么？",options:{A:"系统状态",B:"前置条件",C:"步骤",D:"软件版本"},answer:"B",explanation:"S表示前置条件(Setup)。"},
+  {id:"j1",type:"judge",lecture:1,question:"软件是一种人工制品，是一种抽象的逻辑制品。",answer:true,explanation:"正确。软件是人工制品，也是抽象的逻辑制品。"},
+  {id:"j2",type:"judge",lecture:6,question:"软件测试可用于发现程序代码中的缺陷，能用于证明软件是正确的。",answer:false,explanation:"错误。测试可以发现缺陷，但不能证明软件是正确的。"},
+  {id:"j3",type:"judge",lecture:3,question:"在瀑布模型中，所有阶段都是线性顺序进行，不能回退到前一阶段。",answer:false,explanation:"错误。瀑布模型可以回退，但代价很高。"},
+  {id:"j4",type:"judge",lecture:7,question:"软件维护主要是对软件的错误进行修复，不涉及功能改进和性能优化。",answer:false,explanation:"错误。软件维护还包括改善性维护和适应性维护。"},
+  {id:"n1",type:"term",lecture:1,term:"软件生存周期",answer:"软件生存周期是指软件从概念提出到最终退役的整个过程，包括需求分析、设计、实现、测试、部署、维护与演化等阶段。"},
+  {id:"n2",type:"term",lecture:2,term:"软件工程",answer:"软件工程是将系统化、规范化、可度量的方法应用于软件的开发、运行和维护的过程。其三要素为过程、工具和方法。"},
+  {id:"n3",type:"term",lecture:4,term:"需求工程",answer:"需求工程是一个包括需求获取、需求分析、需求验证和需求管理的连续过程。"},
+  {id:"n4",type:"term",lecture:6,term:"回归测试",answer:"回归测试是在软件修改后重新执行之前的测试用例，以确保修改没有引入新的缺陷并且原有功能仍然正常工作。"},
+  {id:"s1",type:"short",lecture:3,question:"请写出瀑布模型的特点和局限。",answer:"特点：线性顺序进行，各阶段按固定顺序依次进行；文档驱动，阶段明确。局限：难以适应需求变化；后期才发现设计问题，修改代价高。"},
+  {id:"s2",type:"short",lecture:4,question:"请写出需求工程的一般性过程。",answer:"需求工程包括四个连续过程：1.需求获取；2.需求分析；3.需求验证；4.需求管理。"},
+  {id:"s3",type:"short",lecture:6,question:"请写出软件测试的原理。",answer:"软件测试是通过运行程序代码来发现程序中潜藏缺陷的过程。测试可以证明软件存在缺陷，但不能证明软件是正确的。"}
+];
+
+let state = {answered:{},wrong:[],currentQuiz:[],currentIdx:0};
+let currentLecture = 0;
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item')[['home','knowledge','quiz','wrong'].indexOf(name)].classList.add('active');
+  if(name==='home') renderHome();
+  if(name==='knowledge') renderKnowledge();
+  if(name==='quiz') renderQuizMenu();
+  if(name==='wrong') renderWrong();
+}
+
+function renderHome() {
+  document.getElementById('statCards').textContent = knowledgeCards.length;
+  document.getElementById('statQuiz').textContent = quizBank.length;
+  document.getElementById('statDone').textContent = Object.keys(state.answered).length;
+  document.getElementById('statWrong').textContent = state.wrong.length;
+  let html = '';
+  for(let i=1;i<=7;i++) {
+    const kc = knowledgeCards.filter(c=>c.lecture===i).length;
+    const qc = quizBank.filter(q=>q.lecture===i).length;
+    html += `<div style="padding:12px;border:1px solid #ddd;border-radius:6px;margin-bottom:8px"><strong>第${i}讲</strong> - ${kc}个知识点 | ${qc}道题目</div>`;
+  }
+  document.getElementById('courseStructure').innerHTML = html;
+}
+
+function renderKnowledge() {
+  let tabs = '<div class="lecture-tab'+(currentLecture===0?' active':'')+'" onclick="setLecture(0)">全部</div>';
+  for(let i=1;i<=7;i++) tabs += `<div class="lecture-tab${currentLecture===i?' active':''}" onclick="setLecture(${i})">第${i}讲</div>`;
+  document.getElementById('lectureTabs').innerHTML = tabs;
+  let cards = knowledgeCards;
+  if(currentLecture>0) cards = cards.filter(c=>c.lecture===currentLecture);
+  let html = '';
+  cards.forEach(c => {
+    html += `<div class="k-card" onclick="alert('${c.title}\\n\\n定义：${c.definition}\\n\\n要点：\\n${c.keyPoints.map(p=>'• '+p).join('\\n')}')">
+      <div class="k-title">${c.title}</div>
+      <div class="k-def">${c.definition}</div>
+    </div>`;
+  });
+  document.getElementById('knowledgeList').innerHTML = html;
+}
+function setLecture(n) { currentLecture=n; renderKnowledge(); }
+
+function renderQuizMenu() {
+  let html = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">';
+  html += '<div class="card" style="cursor:pointer;text-align:center" onclick="startQuiz(\'all\')"><h3>全部题目</h3><p style="color:#666;margin-top:8px">随机练习所有题型</p></div>';
+  html += '<div class="card" style="cursor:pointer;text-align:center" onclick="startQuiz(\'choice\')"><h3>选择题</h3><p style="color:#666;margin-top:8px">专项练习选择题</p></div>';
+  html += '<div class="card" style="cursor:pointer;text-align:center" onclick="startQuiz(\'judge\')"><h3>判断题</h3><p style="color:#666;margin-top:8px">专项练习判断题</p></div>';
+  html += '<div class="card" style="cursor:pointer;text-align:center" onclick="startQuiz(\'term\')"><h3>名词解释</h3><p style="color:#666;margin-top:8px">背诵核心概念</p></div>';
+  html += '<div class="card" style="cursor:pointer;text-align:center" onclick="startQuiz(\'short\')"><h3>简答题</h3><p style="color:#666;margin-top:8px">练习简答题作答</p></div>';
+  html += '<div class="card" style="cursor:pointer;text-align:center" onclick="startQuiz(\'wrong\')"><h3>错题重练</h3><p style="color:#666;margin-top:8px">重新练习错题</p></div>';
+  html += '</div>';
+  document.getElementById('quizContent').innerHTML = html;
+}
+
+function startQuiz(type) {
+  let pool = quizBank;
+  if(type==='wrong') pool = quizBank.filter(q=>state.wrong.includes(q.id));
+  else if(type!=='all') pool = pool.filter(q=>q.type===type);
+  if(pool.length===0) { alert('没有题目'); return; }
+  state.currentQuiz = pool.sort(()=>Math.random()-0.5);
+  state.currentIdx = 0;
+  renderQuiz();
+}
+
+function renderQuiz() {
+  if(state.currentIdx >= state.currentQuiz.length) {
+    document.getElementById('quizContent').innerHTML = '<div class="card" style="text-align:center;padding:60px"><h2>练习完成！</h2><button class="btn btn-primary" style="margin-top:20px" onclick="renderQuizMenu()">返回</button></div>';
+    return;
+  }
+  const q = state.currentQuiz[state.currentIdx];
+  let html = `<div class="card"><p style="color:#666;margin-bottom:12px">第${state.currentIdx+1}题 / 共${state.currentQuiz.length}题</p>`;
+  html += `<h3 style="margin-bottom:20px">${q.question||q.term}</h3>`;
+  
+  if(q.type==='choice') {
+    for(const [k,v] of Object.entries(q.options)) {
+      html += `<div class="quiz-option" onclick="selectAnswer('${k}')"><strong>${k}.</strong> ${v}</div>`;
+    }
+  } else if(q.type==='judge') {
+    html += '<div style="display:flex;gap:16px"><div class="quiz-option" style="flex:1;text-align:center" onclick="selectAnswer(true)">正确</div><div class="quiz-option" style="flex:1;text-align:center" onclick="selectAnswer(false)">错误</div></div>';
+  } else {
+    html += `<textarea id="userAnswer" style="width:100%;min-height:120px;padding:12px;border:1px solid #ddd;border-radius:6px;font-size:14px" placeholder="请输入你的答案..."></textarea>`;
+    html += '<button class="btn btn-primary" style="margin-top:12px" onclick="submitTerm()">提交答案</button>';
+  }
+  html += '</div>';
+  document.getElementById('quizContent').innerHTML = html;
+}
+
+function selectAnswer(ans) {
+  const q = state.currentQuiz[state.currentIdx];
+  const correct = ans === q.answer;
+  state.answered[q.id] = {correct};
+  if(!correct && !state.wrong.includes(q.id)) state.wrong.push(q.id);
+  else if(correct) state.wrong = state.wrong.filter(id=>id!==q.id);
+  
+  document.querySelectorAll('.quiz-option').forEach((el,i) => {
+    if(q.type==='choice') {
+      const key = Object.keys(q.options)[i];
+      if(key===q.answer) el.classList.add('correct');
+      else if(key===ans && !correct) el.classList.add('wrong');
+    } else {
+      const val = i===0;
+      if(val===q.answer) el.classList.add('correct');
+      else if(val===ans && !correct) el.classList.add('wrong');
+    }
+  });
+  
+  setTimeout(() => {
+    state.currentIdx++;
+    renderQuiz();
+  }, 1500);
+}
+
+function submitTerm() {
+  const q = state.currentQuiz[state.currentIdx];
+  const userAns = document.getElementById('userAnswer').value;
+  state.answered[q.id] = {correct:true};
+  alert('参考答案：\n\n' + q.answer);
+  state.currentIdx++;
+  renderQuiz();
+}
+
+function renderWrong() {
+  const items = quizBank.filter(q=>state.wrong.includes(q.id));
+  if(items.length===0) {
+    document.getElementById('wrongList').innerHTML = '<div class="card" style="text-align:center;padding:60px"><p>错题本为空，继续保持！</p></div>';
+    return;
+  }
+  let html = '';
+  items.forEach(q => {
+    html += `<div class="card"><strong>${q.question||q.term}</strong><p style="color:#10b981;margin-top:12px">答案：${q.answer||q.options[q.answer]||(q.answer?'正确':'错误')}</p></div>`;
+  });
+  document.getElementById('wrongList').innerHTML = html;
+}
+
+renderHome();
+</script>
+</body>
+</html>

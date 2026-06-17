@@ -1,0 +1,4134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>软件工程复习系统 - 完整版</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+    
+    /* Header */
+    .header {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    .header h1 {
+      font-size: 28px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .header p { color: #666; font-size: 14px; }
+    .stats {
+      display: flex;
+      gap: 24px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+      padding: 12px 20px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .stat-icon.cards { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .stat-icon.questions { background: linear-gradient(135deg, #f093fb, #f5576c); }
+    .stat-icon.correct { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+    .stat-icon.rate { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+    .stat-value { font-size: 24px; font-weight: bold; color: #333; }
+    .stat-label { font-size: 12px; color: #666; }
+    
+    /* Navigation */
+    .nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .nav-btn {
+      padding: 14px 28px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: white;
+      color: #666;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+    .nav-btn.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    /* Content Area */
+    .content {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      min-height: 500px;
+    }
+    .page { display: none; }
+    .page.active { display: block; }
+    
+    /* Home Page */
+    .home-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .home-card {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+      border-radius: 16px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+    .home-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+      border-color: #667eea;
+    }
+    .home-card-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+    .home-card h3 { font-size: 18px; margin-bottom: 8px; color: #333; }
+    .home-card p { font-size: 14px; color: #666; line-height: 1.6; }
+    
+    /* Knowledge Cards */
+    .cards-filter {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-select, .filter-input {
+      padding: 10px 16px;
+      border: 2px solid #e4e8ec;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .filter-select:focus, .filter-input:focus { border-color: #667eea; }
+    .filter-input { flex: 1; min-width: 200px; }
+    
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .knowledge-card {
+      background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+      border: 2px solid #e4e8ec;
+      border-radius: 14px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .knowledge-card:hover {
+      border-color: #667eea;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+    }
+    .knowledge-card.mastered {
+      border-color: #43e97b;
+      background: linear-gradient(135deg, #f0fff4 0%, #e6ffed 100%);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .card-lecture {
+      font-size: 12px;
+      padding: 4px 10px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border-radius: 20px;
+    }
+    .card-status {
+      font-size: 18px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    .card-topic {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 12px;
+    }
+    .card-definition {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    /* Card Detail Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 20px;
+      max-width: 700px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 32px;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: #f5f5f5;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .modal-close:hover { background: #e0e0e0; }
+    .modal-title { font-size: 22px; font-weight: 600; color: #333; }
+    .modal-section { margin-bottom: 20px; }
+    .modal-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #667eea;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .modal-definition {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #444;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 12px;
+    }
+    .modal-points {
+      list-style: none;
+    }
+    .modal-points li {
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 14px;
+      color: #555;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .modal-points li:last-child { border-bottom: none; }
+    .modal-points li::before {
+      content: "•";
+      color: #667eea;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .modal-tip {
+      background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+      border-left: 4px solid #ffc107;
+      padding: 16px;
+      border-radius: 0 12px 12px 0;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #666;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
+    .btn-secondary {
+      background: #f5f5f5;
+      color: #666;
+    }
+    .btn-secondary:hover { background: #e0e0e0; }
+    .btn-success {
+      background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+      color: white;
+    }
+    
+    /* Quiz Mode */
+    .quiz-setup {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .quiz-setup h2 { font-size: 24px; margin-bottom: 24px; color: #333; }
+    .quiz-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .quiz-option {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+      border: 2px solid transparent;
+      border-radius: 16px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .quiz-option:hover {
+      border-color: #667eea;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+    }
+    .quiz-option-icon { font-size: 40px; margin-bottom: 12px; }
+    .quiz-option h3 { font-size: 18px; margin-bottom: 8px; color: #333; }
+    .quiz-option p { font-size: 13px; color: #666; }
+    
+    /* Quiz Question */
+    .quiz-container { max-width: 800px; margin: 0 auto; }
+    .quiz-progress {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .progress-bar {
+      flex: 1;
+      height: 8px;
+      background: #e4e8ec;
+      border-radius: 4px;
+      margin: 0 16px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+    .question-card {
+      background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 20px;
+    }
+    .question-type {
+      display: inline-block;
+      padding: 4px 12px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-bottom: 16px;
+    }
+    .question-text {
+      font-size: 18px;
+      line-height: 1.8;
+      color: #333;
+      margin-bottom: 24px;
+    }
+    .options-list { list-style: none; }
+    .option-item {
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      background: white;
+      border: 2px solid #e4e8ec;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .option-item:hover {
+      border-color: #667eea;
+      background: #f8f9ff;
+    }
+    .option-item.selected {
+      border-color: #667eea;
+      background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    }
+    .option-item.correct {
+      border-color: #43e97b;
+      background: linear-gradient(135deg, #f0fff4 0%, #e6ffed 100%);
+    }
+    .option-item.wrong {
+      border-color: #f5576c;
+      background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+    }
+    .option-label {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #e4e8ec;
+      text-align: center;
+      line-height: 28px;
+      margin-right: 12px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .option-item.selected .option-label {
+      background: #667eea;
+      color: white;
+    }
+    .option-item.correct .option-label {
+      background: #43e97b;
+      color: white;
+    }
+    .option-item.wrong .option-label {
+      background: #f5576c;
+      color: white;
+    }
+    
+    /* Judge Question */
+    .judge-options {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 24px;
+    }
+    .judge-btn {
+      padding: 20px 48px;
+      border: 2px solid #e4e8ec;
+      border-radius: 12px;
+      background: white;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .judge-btn:hover { border-color: #667eea; }
+    .judge-btn.selected { border-color: #667eea; background: #eef2ff; }
+    .judge-btn.correct { border-color: #43e97b; background: #f0fff4; }
+    .judge-btn.wrong { border-color: #f5576c; background: #fff5f5; }
+    
+    /* Short Answer */
+    .short-answer-area {
+      width: 100%;
+      min-height: 150px;
+      padding: 16px;
+      border: 2px solid #e4e8ec;
+      border-radius: 12px;
+      font-size: 15px;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .short-answer-area:focus { border-color: #667eea; }
+    
+    /* Explanation */
+    .explanation {
+      margin-top: 20px;
+      padding: 20px;
+      background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+    }
+    .explanation-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #667eea;
+      margin-bottom: 8px;
+    }
+    .explanation-text {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #444;
+    }
+    
+    /* Quiz Actions */
+    .quiz-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    
+    /* Wrong Answers */
+    .wrong-list {
+      display: grid;
+      gap: 16px;
+    }
+    .wrong-item {
+      background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+      border: 2px solid #ffe5e5;
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .wrong-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .wrong-item-type {
+      font-size: 12px;
+      padding: 4px 10px;
+      background: #f5576c;
+      color: white;
+      border-radius: 20px;
+    }
+    .wrong-item-question {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #333;
+      margin-bottom: 12px;
+    }
+    .wrong-item-answer {
+      font-size: 14px;
+      color: #43e97b;
+      margin-bottom: 8px;
+    }
+    .wrong-item-explanation {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    /* Drawing Guide */
+    .drawing-section {
+      margin-bottom: 32px;
+    }
+    .drawing-section h3 {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #667eea;
+    }
+    .drawing-content {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      line-height: 1.8;
+    }
+    .drawing-content h4 {
+      font-size: 16px;
+      color: #667eea;
+      margin: 16px 0 8px 0;
+    }
+    .drawing-content ul {
+      margin-left: 20px;
+      margin-bottom: 12px;
+    }
+    .drawing-content li {
+      margin-bottom: 8px;
+    }
+    
+    /* Test Case Design */
+    .test-case-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .test-case-section h4 {
+      font-size: 16px;
+      color: #667eea;
+      margin-bottom: 12px;
+    }
+    .test-case-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    .test-case-table th,
+    .test-case-table td {
+      border: 1px solid #e4e8ec;
+      padding: 12px;
+      text-align: left;
+    }
+    .test-case-table th {
+      background: #667eea;
+      color: white;
+      font-weight: 600;
+    }
+    .test-case-table tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+    
+    /* Analysis Design */
+    .analysis-section {
+      background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+      border: 2px solid #e4e8ec;
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .analysis-section h4 {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 16px;
+    }
+    .analysis-requirement {
+      background: #eef2ff;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      line-height: 1.8;
+    }
+    .analysis-tasks {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 12px;
+    }
+    .analysis-tasks h5 {
+      font-size: 15px;
+      color: #667eea;
+      margin-bottom: 8px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container { padding: 12px; }
+      .header h1 { font-size: 22px; }
+      .stats { gap: 12px; }
+      .stat-item { padding: 10px 16px; }
+      .nav-btn { padding: 12px 20px; font-size: 14px; }
+      .cards-grid { grid-template-columns: 1fr; }
+      .quiz-options { grid-template-columns: 1fr; }
+      .judge-options { flex-direction: column; }
+      .judge-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>软件工程复习系统</h1>
+      <p>整合所有课程资料：PPT、教材、试卷、作业、实验材料</p>
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-icon cards">📚</div>
+          <div>
+            <div class="stat-value" id="totalCards">0</div>
+            <div class="stat-label">知识卡片</div>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon questions">📝</div>
+          <div>
+            <div class="stat-value" id="totalQuestions">0</div>
+            <div class="stat-label">题库题目</div>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon correct">✓</div>
+          <div>
+            <div class="stat-value" id="correctCount">0</div>
+            <div class="stat-label">答对题数</div>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon rate">%</div>
+          <div>
+            <div class="stat-value" id="correctRate">0%</div>
+            <div class="stat-label">正确率</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Navigation -->
+    <div class="nav">
+      <button class="nav-btn active" onclick="showPage('home')">首页</button>
+      <button class="nav-btn" onclick="showPage('knowledge')">知识卡片</button>
+      <button class="nav-btn" onclick="showPage('quiz')">刷题模式</button>
+      <button class="nav-btn" onclick="showPage('wrong')">错题本</button>
+      <button class="nav-btn" onclick="showPage('drawing')">画图题指南</button>
+      <button class="nav-btn" onclick="showPage('testcase')">测试用例设计</button>
+      <button class="nav-btn" onclick="showPage('analysis')">分析与设计</button>
+    </div>
+    
+    <!-- Content Area -->
+    <div class="content">
+      <!-- Home Page -->
+      <div id="home" class="page active">
+        <div class="home-grid">
+          <div class="home-card" onclick="showPage('knowledge')">
+            <div class="home-card-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">📚</div>
+            <h3>知识卡片</h3>
+            <p>浏览所有知识点，支持按章节筛选，点击卡片查看详细内容和考试重点</p>
+          </div>
+          <div class="home-card" onclick="showPage('quiz')">
+            <div class="home-card-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">📝</div>
+            <h3>刷题模式</h3>
+            <p>包含选择题、判断题、名词解释、简答题，支持多种练习模式</p>
+          </div>
+          <div class="home-card" onclick="showPage('wrong')">
+            <div class="home-card-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">❌</div>
+            <h3>错题本</h3>
+            <p>自动记录做错的题目，支持重复练习直到掌握</p>
+          </div>
+          <div class="home-card" onclick="showPage('drawing')">
+            <div class="home-card-icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">🎨</div>
+            <h3>画图题指南</h3>
+            <p>用例图、顺序图、类图、状态图、活动图的绘制方法和示例</p>
+          </div>
+          <div class="home-card" onclick="showPage('testcase')">
+            <div class="home-card-icon" style="background: linear-gradient(135deg, #fa709a, #fee140);">🧪</div>
+            <h3>测试用例设计</h3>
+            <p>白盒测试（基本路径法）和黑盒测试（等价类划分）的详细说明和例题</p>
+          </div>
+          <div class="home-card" onclick="showPage('analysis')">
+            <div class="home-card-icon" style="background: linear-gradient(135deg, #30cfd0, #330867);">🏗️</div>
+            <h3>分析与设计</h3>
+            <p>面向对象分析与设计题，包括需求分析、用例建模、顺序图、类图</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Knowledge Page -->
+      <div id="knowledge" class="page">
+        <div class="cards-filter">
+          <select class="filter-select" id="lectureFilter" onchange="renderKnowledge()">
+            <option value="">全部章节</option>
+          </select>
+          <input type="text" class="filter-input" id="searchInput" placeholder="搜索知识点..." oninput="renderKnowledge()">
+        </div>
+        <div class="cards-grid" id="cardsGrid"></div>
+      </div>
+      
+      <!-- Quiz Page -->
+      <div id="quiz" class="page">
+        <div id="quizSetup" class="quiz-setup">
+          <h2>选择练习模式</h2>
+          <div class="quiz-options">
+            <div class="quiz-option" onclick="startQuiz('all')">
+              <div class="quiz-option-icon">📚</div>
+              <h3>全部题目</h3>
+              <p>练习所有题目</p>
+            </div>
+            <div class="quiz-option" onclick="startQuiz('choice')">
+              <div class="quiz-option-icon">🔘</div>
+              <h3>选择题</h3>
+              <p>单选题练习</p>
+            </div>
+            <div class="quiz-option" onclick="startQuiz('judge')">
+              <div class="quiz-option-icon">✓</div>
+              <h3>判断题</h3>
+              <p>判断对错练习</p>
+            </div>
+            <div class="quiz-option" onclick="startQuiz('definition')">
+              <div class="quiz-option-icon">📖</div>
+              <h3>名词解释</h3>
+              <p>名词解释练习</p>
+            </div>
+            <div class="quiz-option" onclick="startQuiz('short')">
+              <div class="quiz-option-icon">📝</div>
+              <h3>简答题</h3>
+              <p>简答题练习</p>
+            </div>
+            <div class="quiz-option" onclick="startQuiz('random')">
+              <div class="quiz-option-icon">🎲</div>
+              <h3>随机20题</h3>
+              <p>随机抽取20题</p>
+            </div>
+          </div>
+        </div>
+        <div id="quizContainer" class="quiz-container" style="display: none;"></div>
+      </div>
+      
+      <!-- Wrong Answers Page -->
+      <div id="wrong" class="page">
+        <h2 style="margin-bottom: 20px;">错题本</h2>
+        <div id="wrongList" class="wrong-list"></div>
+      </div>
+      
+      <!-- Drawing Guide Page -->
+      <div id="drawing" class="page">
+        <h2 style="margin-bottom: 24px;">画图题指南</h2>
+        
+        <div class="drawing-section">
+          <h3>1. 用例图 (Use Case Diagram)</h3>
+          <div class="drawing-content">
+            <h4>组成元素：</h4>
+            <ul>
+              <li><strong>参与者 (Actor)</strong>：与系统交互的外部实体，用小人图标表示</li>
+              <li><strong>用例 (Use Case)</strong>：系统提供的功能，用椭圆表示</li>
+              <li><strong>系统边界</strong>：矩形框，区分系统内外</li>
+              <li><strong>关系</strong>：
+                <ul>
+                  <li>关联关系：参与者与用例之间的连线</li>
+                  <li>包含关系 (<<include>>)：必须执行的基础功能</li>
+                  <li>扩展关系 (<<extend>>)：可选的扩展功能</li>
+                  <li>泛化关系：继承关系，用带空心箭头的线表示</li>
+                </ul>
+              </li>
+            </ul>
+            <h4>绘制步骤：</h4>
+            <ul>
+              <li>1. 识别系统的参与者（用户、其他系统）</li>
+              <li>2. 识别系统的功能（用例）</li>
+              <li>3. 确定系统边界</li>
+              <li>4. 绘制参与者与用例的关联关系</li>
+              <li>5. 识别用例之间的包含、扩展关系</li>
+            </ul>
+            <h4>示例（酒店预订系统）：</h4>
+            <p>参与者：用户、管理员<br>
+            用例：登录、搜索酒店、预订酒店、取消预订、管理酒店信息<br>
+            关系：搜索酒店 <<include>> 登录；取消预订 <<extend>> 预订酒店</p>
+          </div>
+        </div>
+        
+        <div class="drawing-section">
+          <h3>2. 顺序图 (Sequence Diagram)</h3>
+          <div class="drawing-content">
+            <h4>组成元素：</h4>
+            <ul>
+              <li><strong>对象/类</strong>：用矩形表示，顶部写类名</li>
+              <li><strong>生命线</strong>：从对象向下延伸的虚线</li>
+              <li><strong>激活期</strong>：生命线上的窄矩形，表示对象活跃时间</li>
+              <li><strong>消息</strong>：对象之间的水平箭头
+                <ul>
+                  <li>同步消息：实心箭头</li>
+                  <li>异步消息：空心箭头</li>
+                  <li>返回消息：虚线箭头</li>
+                </ul>
+              </li>
+              <li><strong>片段</strong>：如 alt（条件）、loop（循环）、opt（可选）</li>
+            </ul>
+            <h4>绘制步骤：</h4>
+            <ul>
+              <li>1. 确定参与交互的对象（边界类、控制类、实体类）</li>
+              <li>2. 画生命线</li>
+              <li>3. 按时间顺序绘制消息</li>
+              <li>4. 添加激活期</li>
+              <li>5. 添加条件和循环片段</li>
+            </ul>
+            <h4>三层架构：</h4>
+            <ul>
+              <li><strong>边界层</strong>：负责与用户交互（界面类）</li>
+              <li><strong>控制层</strong>：负责业务逻辑（控制类）</li>
+              <li><strong>实体层</strong>：负责数据存储（实体类）</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="drawing-section">
+          <h3>3. 类图 (Class Diagram)</h3>
+          <div class="drawing-content">
+            <h4>组成元素：</h4>
+            <ul>
+              <li><strong>类</strong>：矩形，分三层
+                <ul>
+                  <li>类名</li>
+                  <li>属性：可见性 + 名称 : 类型</li>
+                  <li>方法：可见性 + 名称(参数) : 返回类型</li>
+                </ul>
+              </li>
+              <li><strong>可见性</strong>：+ public, - private, # protected</li>
+              <li><strong>关系</strong>：
+                <ul>
+                  <li>关联：实线，可带多重性（1, 0..1, *, 0..*）</li>
+                  <li>聚合：实线 + 空心菱形（整体与部分，可独立存在）</li>
+                  <li>组合：实线 + 实心菱形（整体与部分，不可独立）</li>
+                  <li>继承：虚线 + 空心箭头（泛化）</li>
+                  <li>实现：虚线 + 空心箭头（实现接口）</li>
+                  <li>依赖：虚线 + 箭头（使用关系）</li>
+                </ul>
+              </li>
+            </ul>
+            <h4>绘制步骤：</h4>
+            <ul>
+              <li>1. 识别系统中的类</li>
+              <li>2. 定义类的属性和方法</li>
+              <li>3. 确定类之间的关系</li>
+              <li>4. 绘制类图</li>
+              <li>5. 添加多重性和可见性</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="drawing-section">
+          <h3>4. 状态图 (State Diagram)</h3>
+          <div class="drawing-content">
+            <h4>组成元素：</h4>
+            <ul>
+              <li><strong>状态</strong>：圆角矩形，表示对象的条件</li>
+              <li><strong>转换</strong>：箭头，表示状态变化</li>
+              <li><strong>事件</strong>：触发转换的动作</li>
+              <li><strong>初始状态</strong>：实心圆</li>
+              <li><strong>终态</strong>：实心圆 + 外圈</li>
+            </ul>
+            <h4>绘制步骤：</h4>
+            <ul>
+              <li>1. 识别对象的所有状态</li>
+              <li>2. 确定状态之间的转换</li>
+              <li>3. 识别触发转换的事件</li>
+              <li>4. 绘制状态图</li>
+            </ul>
+            <h4>示例（订单状态）：</h4>
+            <p>初始状态 → 待支付 → 已支付 → 待发货 → 已发货 → 已完成 → 终态<br>
+            待支付 → 已取消（用户取消）<br>
+            已支付 → 退款中 → 已退款</p>
+          </div>
+        </div>
+        
+        <div class="drawing-section">
+          <h3>5. 活动图 (Activity Diagram)</h3>
+          <div class="drawing-content">
+            <h4>组成元素：</h4>
+            <ul>
+              <li><strong>活动</strong>：圆角矩形，表示执行的工作</li>
+              <li><strong>转换</strong>：箭头，表示活动间的流转</li>
+              <li><strong>分支</strong>：菱形，表示条件判断</li>
+              <li><strong>合并</strong>：菱形，分支汇合</li>
+              <li><strong>分叉/汇合</strong>：粗线，表示并发执行</li>
+              <li><strong>初始节点</strong>：实心圆</li>
+              <li><strong>活动终节点</strong>：实心圆 + 外圈</li>
+            </ul>
+            <h4>绘制步骤：</h4>
+            <ul>
+              <li>1. 确定活动的起始和结束</li>
+              <li>2. 识别所有活动</li>
+              <li>3. 确定活动间的顺序和条件</li>
+              <li>4. 绘制活动图</li>
+            </ul>
+            <h4>示例（用户登录流程）：</h4>
+            <p>初始 → 输入用户名密码 → 验证信息 → [信息正确] 登录成功 → 进入系统<br>
+            [信息错误] 显示错误提示 → 重新输入 → 验证信息</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Test Case Design Page -->
+      <div id="testcase" class="page">
+        <h2 style="margin-bottom: 24px;">测试用例设计</h2>
+        
+        <div class="test-case-section">
+          <h4>一、白盒测试 - 基本路径测试法</h4>
+          <div class="drawing-content">
+            <h4>步骤：</h4>
+            <ul>
+              <li>1. 绘制程序流图（节点表示语句或判定，边表示控制流）</li>
+              <li>2. 计算圈复杂度：V(G) = 边数 - 节点数 + 2</li>
+              <li>3. 确定基本路径集合（独立路径的数量等于圈复杂度）</li>
+              <li>4. 为每条基本路径设计测试用例</li>
+            </ul>
+            
+            <h4>示例：求最大公约数</h4>
+            <pre style="background: #fff; padding: 12px; border-radius: 8px; overflow-x: auto;">
+int gcd(int x, int y) {
+    if (x < y) {           // 判定1
+        交换x和y;
+    }
+    while (x % y != 0) {   // 判定2
+        int y1 = y;
+        y = x % y;
+        x = y1;
+    }
+    return y;
+}
+            </pre>
+            
+            <h4>流图分析：</h4>
+            <p>节点数 N = 6，边数 E = 7<br>
+            圈复杂度 V(G) = 7 - 6 + 2 = 3<br>
+            基本路径数量 = 3 条</p>
+            
+            <h4>测试用例：</h4>
+            <table class="test-case-table">
+              <tr>
+                <th>用例编号</th>
+                <th>基本路径</th>
+                <th>x, y 值</th>
+                <th>预期输出</th>
+              </tr>
+              <tr>
+                <td>1</td>
+                <td>路径1：x>=y, x%y=0</td>
+                <td>x=6, y=3</td>
+                <td>3</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>路径2：x<y, 交换后 x%y=0</td>
+                <td>x=3, y=6</td>
+                <td>3</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>路径3：x>=y, x%y!=0, 循环后 x%y=0</td>
+                <td>x=12, y=8</td>
+                <td>4</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        
+        <div class="test-case-section">
+          <h4>二、黑盒测试 - 等价类划分法</h4>
+          <div class="drawing-content">
+            <h4>步骤：</h4>
+            <ul>
+              <li>1. 划分等价类（有效等价类、无效等价类）</li>
+              <li>2. 为每个等价类编号</li>
+              <li>3. 设计测试用例：
+                <ul>
+                  <li>用尽可能少的测试用例覆盖尽可能多的有效等价类</li>
+                  <li>为每个无效等价类设计1个测试用例</li>
+                </ul>
+              </li>
+            </ul>
+            
+            <h4>示例：密码验证</h4>
+            <p>需求：密码由数字和字母组成，长度为6-12位</p>
+            
+            <h4>等价类划分：</h4>
+            <table class="test-case-table">
+              <tr>
+                <th>输入条件</th>
+                <th>有效等价类</th>
+                <th>无效等价类</th>
+              </tr>
+              <tr>
+                <td>字符类型</td>
+                <td>(1) 包含数字和字母</td>
+                <td>(2) 只包含数字<br>(3) 只包含字母<br>(4) 包含特殊字符</td>
+              </tr>
+              <tr>
+                <td>长度</td>
+                <td>(5) 6-12位</td>
+                <td>(6) 小于6位<br>(7) 大于12位</td>
+              </tr>
+            </table>
+            
+            <h4>测试用例：</h4>
+            <table class="test-case-table">
+              <tr>
+                <th>用例编号</th>
+                <th>测试输入</th>
+                <th>预期结果</th>
+                <th>覆盖等价类</th>
+              </tr>
+              <tr>
+                <td>1</td>
+                <td>abc123</td>
+                <td>通过</td>
+                <td>(1)(5)</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>123456</td>
+                <td>拒绝</td>
+                <td>(2)</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>abcdef</td>
+                <td>拒绝</td>
+                <td>(3)</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>abc@12</td>
+                <td>拒绝</td>
+                <td>(4)</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>ab1</td>
+                <td>拒绝</td>
+                <td>(6)</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>abc123456789</td>
+                <td>拒绝</td>
+                <td>(7)</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        
+        <div class="test-case-section">
+          <h4>三、黑盒测试 - 边界值分析法</h4>
+          <div class="drawing-content">
+            <h4>原则：</h4>
+            <ul>
+              <li>错误更容易发生在输入边界附近</li>
+              <li>选择边界值及其邻近值作为测试用例</li>
+            </ul>
+            
+            <h4>示例：密码长度 6-12 位</h4>
+            <table class="test-case-table">
+              <tr>
+                <th>测试值</th>
+                <th>说明</th>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>略小于最小值</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>最小值</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td>略大于最小值</td>
+              </tr>
+              <tr>
+                <td>11</td>
+                <td>略小于最大值</td>
+              </tr>
+              <tr>
+                <td>12</td>
+                <td>最大值</td>
+              </tr>
+              <tr>
+                <td>13</td>
+                <td>略大于最大值</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Analysis and Design Page -->
+      <div id="analysis" class="page">
+        <h2 style="margin-bottom: 24px;">分析与设计题</h2>
+        
+        <div class="analysis-section">
+          <h4>例题1：酒店预订系统</h4>
+          <div class="analysis-requirement">
+            <strong>需求描述：</strong><br>
+            用户在使用系统"酒店预订"功能之前必须登录。用户首先在酒店预订界面上选择预订信息，包括城市、入住日期、退房日期、房间数量、成人和儿童人数等；用户点击搜索按钮，系统进行检查，若城市、入住日期、退房日期为空或入住日期晚于退房日期，则在预订界面上提示出错，否则进行搜索并返回在新的搜索结果页面上以列表形式展示搜索结果，搜索结果若为空集则在搜索结果页面上告知用户没有符合要求的酒店，请调整搜索条件。要求搜索时间不超过10秒。
+          </div>
+          <div class="analysis-tasks">
+            <h5>要求：</h5>
+            <ul style="margin-left: 20px; line-height: 1.8;">
+              <li>(1) 画出"用户"角色的用例图模型</li>
+              <li>(2) 分别画出"搜索酒店"和"登录"的顺序图模型（包括边界类、控制类和实体类）</li>
+              <li>(3) 画出分析类图模型</li>
+            </ul>
+            
+            <h5>解题思路：</h5>
+            <ul style="margin-left: 20px; line-height: 1.8;">
+              <li><strong>用例图：</strong>
+                <ul>
+                  <li>参与者：用户</li>
+                  <li>用例：登录、搜索酒店、预订酒店</li>
+                  <li>关系：搜索酒店 <<include>> 登录</li>
+                </ul>
+              </li>
+              <li><strong>顺序图（搜索酒店）：</strong>
+                <ul>
+                  <li>边界类：搜索界面、搜索结果界面</li>
+                  <li>控制类：搜索控制器</li>
+                  <li>实体类：酒店信息</li>
+                  <li>流程：用户 → 搜索界面 → 搜索控制器 → 酒店信息 → 搜索控制器 → 搜索结果界面 → 用户</li>
+                </ul>
+              </li>
+              <li><strong>类图：</strong>
+                <ul>
+                  <li>边界类：搜索界面（显示搜索表单、接收输入）、搜索结果界面（显示结果列表）</li>
+                  <li>控制类：搜索控制器（验证输入、执行搜索）</li>
+                  <li>实体类：酒店信息（酒店ID、名称、地址、价格）</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="analysis-section">
+          <h4>例题2：在线购物车系统</h4>
+          <div class="analysis-requirement">
+            <strong>需求描述：</strong><br>
+            用户在使用系统之前必须登录。用户可以浏览商品并将商品添加到购物车。用户可以查看购物车中的商品列表，并对购物车中的商品进行修改。用户可以提交购物车以生成订单。在订单生成之前，系统会对购物车中的商品库存进行检查，若库存不足则提示用户修改购物车。若所有商品库存充足，则生成订单并清空购物车。
+          </div>
+          <div class="analysis-tasks">
+            <h5>要求：</h5>
+            <ul style="margin-left: 20px; line-height: 1.8;">
+              <li>(1) 画出"用户"角色的用例图模型</li>
+              <li>(2) 分别画出"浏览商品"和"提交购物车"的顺序图模型</li>
+              <li>(3) 画出分析类图模型</li>
+            </ul>
+            
+            <h5>解题思路：</h5>
+            <ul style="margin-left: 20px; line-height: 1.8;">
+              <li><strong>用例图：</strong>
+                <ul>
+                  <li>参与者：用户</li>
+                  <li>用例：登录、浏览商品、添加到购物车、查看购物车、修改购物车、提交订单</li>
+                  <li>关系：浏览商品 <<include>> 登录；提交订单 <<include>> 查看购物车</li>
+                </ul>
+              </li>
+              <li><strong>顺序图（提交购物车）：</strong>
+                <ul>
+                  <li>边界类：购物车界面、订单界面</li>
+                  <li>控制类：订单控制器</li>
+                  <li>实体类：购物车、商品、订单</li>
+                  <li>流程：用户 → 购物车界面 → 订单控制器 → 商品（检查库存）→ 订单控制器 → 订单（生成订单）→ 订单界面 → 用户</li>
+                </ul>
+              </li>
+              <li><strong>类图：</strong>
+                <ul>
+                  <li>边界类：购物车界面、订单界面</li>
+                  <li>控制类：订单控制器</li>
+                  <li>实体类：购物车（购物车ID、商品列表）、商品（商品ID、名称、价格、库存）、订单（订单ID、商品列表、总价）</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="analysis-section">
+          <h4>例题3：界面设计类图</h4>
+          <div class="analysis-requirement">
+            <strong>题目：</strong><br>
+            以下界面是某款APP"绑定手机号"功能的设计界面。请给出该界面的设计类图。
+          </div>
+          <div class="analysis-tasks">
+            <h5>解题思路：</h5>
+            <ul style="margin-left: 20px; line-height: 1.8;">
+              <li><strong>识别界面元素：</strong>
+                <ul>
+                  <li>输入框：手机号输入框、验证码输入框</li>
+                  <li>按钮：获取验证码按钮、确认绑定按钮</li>
+                  <li>提示文本</li>
+                </ul>
+              </li>
+              <li><strong>设计类图：</strong>
+                <ul>
+                  <li>边界类：BindPhoneView（显示界面、接收输入）</li>
+                  <li>控制类：BindPhoneController（验证手机号、发送验证码、绑定手机号）</li>
+                  <li>实体类：User（用户ID、手机号）</li>
+                </ul>
+              </li>
+              <li><strong>属性和方法：</strong>
+                <ul>
+                  <li>BindPhoneView: -phoneNumber: String, -verifyCode: String, +display(), +getInput()</li>
+                  <li>BindPhoneController: +validatePhone(), +sendVerifyCode(), +bindPhone()</li>
+                  <li>User: -userId: int, -phone: String, +getPhone(), +setPhone()</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal"></div>
+  </div>
+  
+  <script>
+  // ===== DATA =====
+  const knowledgeCards = [,
+  // 第1章 从程序到软件
+  {
+    id: "textbook_1",
+    lecture: 1,
+    topic: "程序与软件基础",
+    title: "程序的概念",
+    definition: "程序是用计算机语言编写的、能够完成特定功能的指令序列。程序是软件的基础，但软件不仅仅是程序，还包括文档、数据等相关内容。",
+    keyPoints: [
+      "程序是指令的有序集合",
+      "程序使用编程语言编写",
+      "程序具有特定功能",
+      "程序是软件的核心组成部分"
+    ],
+    examTip: "理解程序与软件的区别，程序是软件的一部分",
+    pageRef: "第1章 1.1节"
+  },
+  {
+    id: "textbook_2",
+    lecture: 1,
+    topic: "程序与软件基础",
+    title: "程序质量",
+    definition: "程序质量指程序满足明确或隐含需求的能力，包括功能完整性、性能效率、可靠性、可用性等特征。",
+    keyPoints: [
+      "功能完整性：实现所有需求功能",
+      "性能效率：响应时间、资源利用率",
+      "可靠性：容错能力、稳定性",
+      "可用性：易学易用"
+    ],
+    examTip: "掌握程序质量的主要特征和评价指标",
+    pageRef: "第1章 1.2节"
+  },
+  {
+    id: "textbook_3",
+    lecture: 1,
+    topic: "程序与软件基础",
+    title: "程序编码风格",
+    definition: "程序编码风格是编写代码时遵循的规范和约定，良好的编码风格能提高代码的可读性和可维护性。",
+    keyPoints: [
+      "命名规范：变量、函数、类名清晰易懂",
+      "缩进和格式化：统一的代码排版",
+      "注释：适当的代码说明",
+      "简洁性：避免过度复杂的实现"
+    ],
+    examTip: "理解良好编码风格的重要性及其对软件质量的影响",
+    pageRef: "第1章 1.3.1节"
+  },
+  {
+    id: "textbook_4",
+    lecture: 1,
+    topic: "程序与软件基础",
+    title: "结对编程",
+    definition: "结对编程是一种敏捷软件开发方法，两名程序员共同在一台计算机上工作，一人编写代码（驾驶员），另一人审查代码（导航员）。",
+    keyPoints: [
+      "两人协作：驾驶员和导航员角色",
+      "实时审查：代码质量即时保障",
+      "知识共享：技能互相传递",
+      "提高代码质量：减少缺陷"
+    ],
+    examTip: "掌握结对编程的概念、角色分工及其优势",
+    pageRef: "第1章 1.3.4节"
+  },
+  {
+    id: "textbook_5",
+    lecture: 1,
+    topic: "程序与软件基础",
+    title: "软件的概念",
+    definition: "软件是计算机系统中与硬件相互依存的另一部分，包括程序、数据及其相关文档的完整集合。软件是逻辑产品而非物理产品。",
+    keyPoints: [
+      "软件 = 程序 + 数据 + 文档",
+      "软件是逻辑实体",
+      "软件不会磨损但会退化",
+      "软件具有复杂性、一致性、可变性"
+    ],
+    examTip: "重点掌握软件的定义及其与硬件的区别",
+    pageRef: "第1章 1.6.1节"
+  },
+  {
+    id: "textbook_6",
+    lecture: 1,
+    topic: "程序与软件基础",
+    title: "软件生存周期",
+    definition: "软件生存周期是指软件从提出、开发、使用、维护到最终废弃的整个过程，通常包括可行性研究、需求分析、设计、实现、测试、部署、维护等阶段。",
+    keyPoints: [
+      "可行性研究阶段",
+      "需求分析阶段",
+      "设计阶段",
+      "实现阶段",
+      "测试阶段",
+      "部署阶段",
+      "维护阶段"
+    ],
+    examTip: "掌握软件生存周期的各个阶段及其主要任务",
+    pageRef: "第1章 1.6.2节"
+  },
+  {
+    id: "textbook_7",
+    lecture: 1,
+    topic: "程序与软件基础",
+    title: "软件的特点",
+    definition: "软件具有抽象性、复杂性、一致性、可变性等特征，这些特征使得软件开发具有挑战性。",
+    keyPoints: [
+      "抽象性：软件是逻辑实体",
+      "复杂性：软件系统规模庞大",
+      "一致性：需与硬件、其他软件协调",
+      "可变性：需求不断变化"
+    ],
+    examTip: "理解软件的特点及其对软件开发的影响",
+    pageRef: "第1章 1.6.3节"
+  },
+  {
+    id: "textbook_8",
+    lecture: 1,
+    topic: "程序与软件基础",
+    title: "软件的分类",
+    definition: "软件按功能可分为系统软件、支撑软件和应用软件；按规模可分为小型、中型、大型软件。",
+    keyPoints: [
+      "系统软件：操作系统、编译程序等",
+      "支撑软件：开发工具、中间件等",
+      "应用软件：面向特定应用领域",
+      "按规模分类：小型、中型、大型"
+    ],
+    examTip: "掌握软件的分类方法，能举例说明各类软件",
+    pageRef: "第1章 1.6.4节"
+  },
+  {
+    id: "textbook_9",
+    lecture: 1,
+    topic: "程序与软件基础",
+    title: "开源软件",
+    definition: "开源软件是指源代码公开、允许用户自由使用、修改和分发的软件。开源软件遵循特定的开源许可证。",
+    keyPoints: [
+      "源代码公开",
+      "自由使用、修改、分发",
+      "遵循开源许可证（GPL、MIT等）",
+      "社区协作开发"
+    ],
+    examTip: "理解开源软件的概念、特点及常见许可证",
+    pageRef: "第1章 1.7节"
+  },
+
+  // 第2章 软件工程概述
+  {
+    id: "textbook_10",
+    lecture: 1,
+    topic: "软件工程概述",
+    title: "软件危机",
+    definition: "软件危机是指在软件开发和维护过程中遇到的一系列严重问题，表现为成本超支、进度延误、质量低劣、难以维护等。",
+    keyPoints: [
+      "成本超支：实际成本远超预算",
+      "进度延误：项目无法按期完成",
+      "质量低劣：软件缺陷多",
+      "难以维护：代码难以理解和修改",
+      "产生原因：软件复杂性增加、方法不当"
+    ],
+    examTip: "重点掌握软件危机的表现、原因及解决途径",
+    pageRef: "第2章 2.1.2节"
+  },
+  {
+    id: "textbook_11",
+    lecture: 1,
+    topic: "软件工程概述",
+    title: "软件工程的定义",
+    definition: "软件工程是将系统化、规范化、可度量的方法应用于软件的开发、运行和维护的过程，即把工程化的方法应用于软件。",
+    keyPoints: [
+      "系统化：采用系统的方法",
+      "规范化：遵循标准和规范",
+      "可度量：过程和结果可量化评估",
+      "工程化：采用工程原则和方法"
+    ],
+    examTip: "掌握软件工程的定义及其核心要素",
+    pageRef: "第2章 2.2.1节"
+  },
+  {
+    id: "textbook_12",
+    lecture: 1,
+    topic: "软件工程概述",
+    title: "软件工程的三要素",
+    definition: "软件工程的三要素是方法、工具和过程。方法提供技术手段，工具提供自动化支持，过程提供管理框架。",
+    keyPoints: [
+      "方法：软件开发的技术方法",
+      "工具：CASE工具等自动化支持",
+      "过程：软件过程模型和管理框架",
+      "三要素相互关联、缺一不可"
+    ],
+    examTip: "重点掌握软件工程三要素及其相互关系",
+    pageRef: "第2章 2.2.2节"
+  },
+  {
+    id: "textbook_13",
+    lecture: 1,
+    topic: "软件工程概述",
+    title: "软件工程的目标",
+    definition: "软件工程的目标是开发高质量、低成本、按时交付的软件产品，提高软件生产率，改善软件质量。",
+    keyPoints: [
+      "提高软件质量",
+      "提高软件生产率",
+      "降低软件成本",
+      "按时交付软件产品",
+      "满足用户需求"
+    ],
+    examTip: "理解软件工程的目标及其权衡关系",
+    pageRef: "第2章 2.2.3节"
+  },
+  {
+    id: "textbook_14",
+    lecture: 1,
+    topic: "软件工程概述",
+    title: "软件工程的原则",
+    definition: "软件工程的基本原则包括抽象、模块化、信息隐藏、局部化、一致性、适应性等，这些原则指导软件开发实践。",
+    keyPoints: [
+      "抽象：提取本质特征",
+      "模块化：分解为独立模块",
+      "信息隐藏：隐藏实现细节",
+      "局部化：相关元素紧密关联",
+      "一致性：统一标准和风格",
+      "适应性：易于修改和扩展"
+    ],
+    examTip: "重点掌握软件工程的基本原则及其应用",
+    pageRef: "第2章 2.2.4节"
+  },
+  {
+    id: "textbook_15",
+    lecture: 1,
+    topic: "软件工程概述",
+    title: "CASE工具",
+    definition: "CASE（Computer-Aided Software Engineering）工具是计算机辅助软件工程工具，用于支持软件开发、维护和管理等活动。",
+    keyPoints: [
+      "支持需求分析",
+      "支持设计建模",
+      "支持代码生成",
+      "支持测试",
+      "支持项目管理",
+      "集成开发环境"
+    ],
+    examTip: "了解CASE工具的概念、分类及作用",
+    pageRef: "第2章 2.3.2节"
+  },
+
+  // 第3章 软件过程模型和开发方法
+  {
+    id: "textbook_16",
+    lecture: 2,
+    topic: "软件过程模型",
+    title: "软件过程",
+    definition: "软件过程是指软件生存周期中的一系列活动、方法和实践，包括需求、设计、实现、测试、维护等阶段及其管理。",
+    keyPoints: [
+      "定义软件生存周期",
+      "规定各阶段的任务和产出",
+      "提供过程管理框架",
+      "保证软件质量"
+    ],
+    examTip: "理解软件过程的概念及其重要性",
+    pageRef: "第3章 3.1.1节"
+  },
+  {
+    id: "textbook_17",
+    lecture: 2,
+    topic: "软件过程模型",
+    title: "瀑布模型",
+    definition: "瀑布模型是经典的软件过程模型，将软件生存周期划分为需求分析、设计、编码、测试、维护等阶段，各阶段按顺序依次进行。",
+    keyPoints: [
+      "阶段顺序执行",
+      "每个阶段有明确产出",
+      "文档驱动",
+      "适用于需求明确的项目",
+      "缺点：难以适应需求变化"
+    ],
+    examTip: "重点掌握瀑布模型的特点、优缺点及适用场景",
+    pageRef: "第3章 3.1.2节"
+  },
+  {
+    id: "textbook_18",
+    lecture: 2,
+    topic: "软件过程模型",
+    title: "增量模型",
+    definition: "增量模型将软件分解为多个可独立交付的增量，每个增量都经过需求、设计、编码、测试，逐步交付完整系统。",
+    keyPoints: [
+      "分批次交付产品",
+      "每个增量都是可运行的系统",
+      "核心功能优先开发",
+      "适用于需求逐步明确的项目",
+      "风险分散"
+    ],
+    examTip: "掌握增量模型的特点及其与瀑布模型的区别",
+    pageRef: "第3章 3.1.2节"
+  },
+  {
+    id: "textbook_19",
+    lecture: 2,
+    topic: "软件过程模型",
+    title: "螺旋模型",
+    definition: "螺旋模型结合了瀑布模型和原型模型的优点，强调风险分析，通过迭代方式逐步完善系统。",
+    keyPoints: [
+      "四个象限：制定计划、风险分析、实施工程、客户评估",
+      "强调风险分析",
+      "迭代开发",
+      "适用于大型复杂系统",
+      "成本较高"
+    ],
+    examTip: "重点掌握螺旋模型的四个阶段及风险分析的特点",
+    pageRef: "第3章 3.1.2节"
+  },
+  {
+    id: "textbook_20",
+    lecture: 2,
+    topic: "软件过程模型",
+    title: "原型模型",
+    definition: "原型模型通过快速构建系统原型来获取用户反馈，逐步明确需求，最终形成完整系统。",
+    keyPoints: [
+      "快速构建原型",
+      "获取用户反馈",
+      "逐步明确需求",
+      "适用于需求不明确的项目",
+      "原型可抛弃或演化"
+    ],
+    examTip: "掌握原型模型的适用场景及原型的分类",
+    pageRef: "第3章 3.1.2节"
+  },
+  {
+    id: "textbook_21",
+    lecture: 2,
+    topic: "敏捷方法",
+    title: "敏捷方法",
+    definition: "敏捷方法是一种以人为核心、迭代、循序渐进的软件开发方法，强调响应变化而非遵循计划，强调可工作的软件而非详尽的文档。",
+    keyPoints: [
+      "个体和互动高于流程和工具",
+      "工作的软件高于详尽的文档",
+      "客户合作高于合同谈判",
+      "响应变化高于遵循计划",
+      "迭代开发、持续交付"
+    ],
+    examTip: "重点掌握敏捷宣言的四个核心价值观",
+    pageRef: "第3章 3.2.1节"
+  },
+  {
+    id: "textbook_22",
+    lecture: 2,
+    topic: "敏捷方法",
+    title: "极限编程（XP）",
+    definition: "极限编程是一种轻量级敏捷方法，强调沟通、简单、反馈、勇气和响应变化，采用结对编程、测试驱动开发等实践。",
+    keyPoints: [
+      "四个价值观：沟通、简单、反馈、勇气",
+      "结对编程",
+      "测试驱动开发",
+      "持续集成",
+      "重构",
+      "简单设计"
+    ],
+    examTip: "掌握极限编程的核心价值观和主要实践",
+    pageRef: "第3章 3.2.2节"
+  },
+  {
+    id: "textbook_23",
+    lecture: 2,
+    topic: "敏捷方法",
+    title: "Scrum方法",
+    definition: "Scrum是一种迭代式敏捷开发框架，将开发周期划分为多个Sprint（冲刺），每个Sprint通常为2-4周，通过角色、活动和工件来管理开发过程。",
+    keyPoints: [
+      "三个角色：产品负责人、Scrum Master、开发团队",
+      "五个活动：Sprint、Sprint计划会、每日站会、Sprint评审会、Sprint回顾会",
+      "三个工件：产品待办列表、Sprint待办列表、增量",
+      "时间盒：固定时间周期"
+    ],
+    examTip: "重点掌握Scrum的角色、活动和工件",
+    pageRef: "第3章 3.2.3节"
+  },
+  {
+    id: "textbook_24",
+    lecture: 2,
+    topic: "敏捷方法",
+    title: "测试驱动开发（TDD）",
+    definition: "测试驱动开发是一种软件开发方法，要求先编写测试用例，再编写实现代码使测试通过，强调测试先行。",
+    keyPoints: [
+      "红-绿-重构循环",
+      "先写测试后写代码",
+      "测试即文档",
+      "提高代码覆盖率",
+      "促进良好设计"
+    ],
+    examTip: "掌握TDD的开发流程及其优势",
+    pageRef: "第3章 3.2.4节"
+  },
+  {
+    id: "textbook_25",
+    lecture: 2,
+    topic: "群体化开发",
+    title: "群体化开发方法",
+    definition: "群体化开发方法是利用群体智慧进行软件开发的方法，包括开源开发、众包开发、知识共享等形式。",
+    keyPoints: [
+      "开源软件开发",
+      "众包开发",
+      "群体智慧",
+      "知识共享",
+      "分布式协作"
+    ],
+    examTip: "了解群体化开发的主要形式和特点",
+    pageRef: "第3章 3.3.1节"
+  },
+
+  // 第4章 软件需求工程基础
+  {
+    id: "textbook_26",
+    lecture: 3,
+    topic: "需求工程基础",
+    title: "软件需求",
+    definition: "软件需求是指用户对目标软件系统在功能、行为、性能、设计约束等方面的期望和需要，是软件开发的基础。",
+    keyPoints: [
+      "功能需求：系统应提供的功能",
+      "非功能需求：性能、安全性等约束",
+      "设计约束：技术、标准等限制",
+      "需求是验收的依据"
+    ],
+    examTip: "重点掌握软件需求的分类及各类需求的特点",
+    pageRef: "第4章 4.1.1节"
+  },
+  {
+    id: "textbook_27",
+    lecture: 3,
+    topic: "需求工程基础",
+    title: "需求的分类",
+    definition: "软件需求可分为功能需求、非功能需求和设计约束。功能需求描述系统应做什么，非功能需求描述系统应做得怎样，设计约束是开发限制。",
+    keyPoints: [
+      "功能需求：系统功能和服务",
+      "非功能需求：性能、可靠性、安全性、可用性等",
+      "设计约束：技术栈、平台、标准等",
+      "需求层次：业务需求、用户需求、系统需求"
+    ],
+    examTip: "能区分功能需求和非功能需求，举例说明",
+    pageRef: "第4章 4.1.2节"
+  },
+  {
+    id: "textbook_28",
+    lecture: 3,
+    topic: "需求工程基础",
+    title: "需求工程",
+    definition: "需求工程是系统性地处理软件需求的过程，包括需求获取、需求分析、需求规格说明、需求验证和需求管理等活动。",
+    keyPoints: [
+      "需求获取：收集用户需求",
+      "需求分析：分析和建模需求",
+      "需求规格说明：编写需求文档",
+      "需求验证：确认需求正确性",
+      "需求管理：管理需求变更"
+    ],
+    examTip: "掌握需求工程的主要活动及其相互关系",
+    pageRef: "第4章 4.2.1节"
+  },
+  {
+    id: "textbook_29",
+    lecture: 3,
+    topic: "需求工程基础",
+    title: "结构化分析方法",
+    definition: "结构化分析方法是一种面向数据流的需求分析方法，使用数据流图、数据字典、实体关系图等工具建立系统逻辑模型。",
+    keyPoints: [
+      "自顶向下、逐层分解",
+      "数据流图（DFD）",
+      "数据字典（DD）",
+      "实体关系图（ER图）",
+      "加工说明"
+    ],
+    examTip: "重点掌握数据流图的画法及各层次DFD的关系",
+    pageRef: "第4章 4.3节"
+  },
+  {
+    id: "textbook_30",
+    lecture: 3,
+    topic: "需求工程基础",
+    title: "数据流图（DFD）",
+    definition: "数据流图是结构化分析的核心工具，用图形方式描述系统的逻辑模型，展示数据在系统中的流动和处理过程。",
+    keyPoints: [
+      "四种基本元素：外部实体、加工、数据存储、数据流",
+      "分层结构：顶层、0层、1层等",
+      "父图与子图平衡",
+      "描述系统逻辑功能"
+    ],
+    examTip: "必须掌握DFD的画法，注意分层和平衡原则",
+    pageRef: "第4章 4.3.2节"
+  },
+  {
+    id: "textbook_31",
+    lecture: 3,
+    topic: "需求工程基础",
+    title: "面向对象分析方法",
+    definition: "面向对象分析方法以对象为核心，使用UML建模语言，从对象、类、继承、消息等角度分析系统需求。",
+    keyPoints: [
+      "对象和类",
+      "封装、继承、多态",
+      "UML建模语言",
+      "用例图、类图、状态图等",
+      "从现实世界抽象对象"
+    ],
+    examTip: "掌握面向对象的基本概念及UML图的绘制",
+    pageRef: "第4章 4.4节"
+  },
+  {
+    id: "textbook_32",
+    lecture: 3,
+    topic: "需求工程基础",
+    title: "UML统一建模语言",
+    definition: "UML（Unified Modeling Language）是一种标准化的可视化建模语言，用于软件系统的规格说明、可视化和文档化。",
+    keyPoints: [
+      "用例图：描述系统功能",
+      "类图：描述静态结构",
+      "序列图：描述交互顺序",
+      "状态图：描述对象状态",
+      "活动图：描述业务流程",
+      "14种图的分类和应用"
+    ],
+    examTip: "重点掌握用例图、类图、序列图的画法",
+    pageRef: "第4章 4.4.2节"
+  },
+  {
+    id: "textbook_33",
+    lecture: 3,
+    topic: "需求工程基础",
+    title: "需求变更管理",
+    definition: "需求变更管理是对需求变更进行识别、评估、批准和控制的过程，确保变更有序进行，减少对项目的影响。",
+    keyPoints: [
+      "变更控制委员会（CCB）",
+      "变更申请流程",
+      "影响分析",
+      "变更追踪",
+      "版本管理"
+    ],
+    examTip: "理解需求变更管理的重要性及控制流程",
+    pageRef: "第4章 4.7节"
+  },
+
+  // 第5章 获取软件需求
+  {
+    id: "textbook_34",
+    lecture: 3,
+    topic: "获取软件需求",
+    title: "需求获取方法",
+    definition: "需求获取是通过各种方式收集用户需求的过程，常用方法包括访谈、问卷、观察、原型、文档分析等。",
+    keyPoints: [
+      "用户访谈",
+      "问卷调查",
+      "现场观察",
+      "原型法",
+      "文档分析",
+      "头脑风暴"
+    ],
+    examTip: "掌握各种需求获取方法的特点及适用场景",
+    pageRef: "第5章 5.1.4节"
+  },
+  {
+    id: "textbook_35",
+    lecture: 3,
+    topic: "获取软件需求",
+    title: "利益相关者识别",
+    definition: "利益相关者是指与软件系统有利益关系的个人或组织，识别利益相关者是需求获取的重要步骤。",
+    keyPoints: [
+      "直接利益相关者：用户、客户",
+      "间接利益相关者：维护人员、管理人员",
+      "识别方法和技巧",
+      "分析利益相关者的需求和期望"
+    ],
+    examTip: "理解识别利益相关者的重要性",
+    pageRef: "第5章 5.4.1节"
+  },
+  {
+    id: "textbook_36",
+    lecture: 3,
+    topic: "获取软件需求",
+    title: "用例图",
+    definition: "用例图是UML中描述系统功能的图形化工具，由参与者、用例和关系组成，从用户角度描述系统功能。",
+    keyPoints: [
+      "参与者（Actor）：与系统交互的外部实体",
+      "用例（Use Case）：系统提供的功能",
+      "关系：关联、包含、扩展、泛化",
+      "系统边界"
+    ],
+    examTip: "必须掌握用例图的画法及各种关系的区别",
+    pageRef: "第5章 5.5.3节"
+  },
+
+  // 第6章 分析软件需求
+  {
+    id: "textbook_37",
+    lecture: 4,
+    topic: "分析软件需求",
+    title: "需求分析任务",
+    definition: "需求分析是对获取的需求进行精细化分析，建立系统模型，确定系统必须完成的功能和性能要求。",
+    keyPoints: [
+      "建立系统模型",
+      "确定功能需求",
+      "确定非功能需求",
+      "需求优先级排序",
+      "需求验证"
+    ],
+    examTip: "理解需求分析的主要任务和目标",
+    pageRef: "第6章 6.1.2节"
+  },
+  {
+    id: "textbook_38",
+    lecture: 4,
+    topic: "分析软件需求",
+    title: "交互图",
+    definition: "交互图是UML中描述对象之间交互关系的图形，包括序列图、通信图、交互概览图和时序图。",
+    keyPoints: [
+      "序列图：按时间顺序展示消息交换",
+      "通信图：展示对象间的链接和消息",
+      "生命线、激活期、消息",
+      "描述用例实现"
+    ],
+    examTip: "重点掌握序列图的画法",
+    pageRef: "第6章 6.2.2节"
+  },
+  {
+    id: "textbook_39",
+    lecture: 4,
+    topic: "分析软件需求",
+    title: "类图",
+    definition: "类图是UML中描述系统静态结构的图形，展示类及其关系（关联、聚合、组合、继承、依赖），是面向对象分析的核心。",
+    keyPoints: [
+      "类的表示：类名、属性、方法",
+      "关联关系：一对一、一对多、多对多",
+      "聚合和组合：整体与部分的关系",
+      "继承（泛化）：父子类关系",
+      "依赖关系"
+    ],
+    examTip: "必须掌握类图的画法及各种关系的区别",
+    pageRef: "第6章 6.2.3节"
+  },
+  {
+    id: "textbook_40",
+    lecture: 4,
+    topic: "分析软件需求",
+    title: "状态图",
+    definition: "状态图是UML中描述对象状态变化的图形，展示对象在其生命周期内的状态序列以及对事件的响应。",
+    keyPoints: [
+      "状态：对象的状况",
+      "转换：状态间的迁移",
+      "事件：触发转换的动作",
+      "初态和终态",
+      "描述对象行为"
+    ],
+    examTip: "掌握状态图的画法及适用场景",
+    pageRef: "第6章 6.2.4节"
+  },
+  {
+    id: "textbook_41",
+    lecture: 4,
+    topic: "分析软件需求",
+    title: "需求规格说明书",
+    definition: "需求规格说明书（SRS）是需求工程的最终产出，详细描述系统功能、性能、约束等需求，是设计和测试的依据。",
+    keyPoints: [
+      "引言：目的、范围、定义",
+      "总体描述：系统功能、用户特征、约束",
+      "具体需求：功能需求、非功能需求",
+      "文档格式规范"
+    ],
+    examTip: "了解SRS的结构和编写要求",
+    pageRef: "第6章 6.6.1节"
+  },
+
+  // 第7章 软件设计基础
+  {
+    id: "textbook_42",
+    lecture: 5,
+    topic: "软件设计基础",
+    title: "软件设计",
+    definition: "软件设计是将需求转化为软件表示的过程，包括体系结构设计、接口设计、数据设计和过程设计等层次。",
+    keyPoints: [
+      "体系结构设计",
+      "接口设计",
+      "数据设计",
+      "过程设计",
+      "从逻辑模型到物理模型"
+    ],
+    examTip: "理解软件设计的层次和各层次的任务",
+    pageRef: "第7章 7.1.1节"
+  },
+  {
+    id: "textbook_43",
+    lecture: 5,
+    topic: "软件设计基础",
+    title: "设计质量要求",
+    definition: "软件设计应满足功能性、正确性、效率、可维护性、可靠性、安全性等质量要求。",
+    keyPoints: [
+      "功能性：满足需求",
+      "正确性：实现正确",
+      "效率：资源利用合理",
+      "可维护性：易于修改",
+      "可靠性：稳定运行",
+      "安全性：防止非法访问"
+    ],
+    examTip: "掌握软件设计的质量要求",
+    pageRef: "第7章 7.1.3节"
+  },
+  {
+    id: "textbook_44",
+    lecture: 5,
+    topic: "软件设计基础",
+    title: "设计原则",
+    definition: "软件设计原则包括模块化、抽象、信息隐藏、局部化、高内聚低耦合等，指导设计决策。",
+    keyPoints: [
+      "模块化：分解为独立模块",
+      "抽象：提取本质特征",
+      "信息隐藏：隐藏实现细节",
+      "高内聚：模块内部紧密",
+      "低耦合：模块间依赖少",
+      "局部化：相关元素聚集"
+    ],
+    examTip: "重点掌握高内聚低耦合原则",
+    pageRef: "第7章 7.2.2节"
+  },
+  {
+    id: "textbook_45",
+    lecture: 5,
+    topic: "软件设计基础",
+    title: "结构化设计方法",
+    definition: "结构化设计方法是一种面向数据流的设计方法，将数据流图映射为软件结构，采用自顶向下、逐步求精的策略。",
+    keyPoints: [
+      "面向数据流",
+      "变换型系统",
+      "事务型系统",
+      "结构图",
+      "自顶向下分解"
+    ],
+    examTip: "掌握变换型DFD和事务型DFD的映射方法",
+    pageRef: "第7章 7.3节"
+  },
+  {
+    id: "textbook_46",
+    lecture: 5,
+    topic: "软件设计基础",
+    title: "面向对象设计原则",
+    definition: "面向对象设计原则包括开闭原则、单一职责原则、里氏替换原则、依赖倒置原则、接口隔离原则等（SOLID原则）。",
+    keyPoints: [
+      "开闭原则（OCP）：对扩展开放，对修改关闭",
+      "单一职责原则（SRP）：一个类一个职责",
+      "里氏替换原则（LSP）：子类可替换父类",
+      "依赖倒置原则（DIP）：依赖抽象而非具体",
+      "接口隔离原则（ISP）：使用多个专门接口"
+    ],
+    examTip: "重点掌握SOLID五大原则",
+    pageRef: "第7章 7.4.2节"
+  },
+
+  // 第8章 软件体系结构设计
+  {
+    id: "textbook_47",
+    lecture: 5,
+    topic: "体系结构设计",
+    title: "软件体系结构",
+    definition: "软件体系结构是系统的高层结构，包括组件、组件间关系及指导设计的原则，是系统设计的基础。",
+    keyPoints: [
+      "组件和连接件",
+      "体系结构风格",
+      "体系结构视图",
+      "设计决策"
+    ],
+    examTip: "理解软件体系结构的概念及重要性",
+    pageRef: "第8章 8.1.1节"
+  },
+  {
+    id: "textbook_48",
+    lecture: 5,
+    topic: "体系结构设计",
+    title: "体系结构风格",
+    definition: "体系结构风格是描述系统组织方式的模式，常见风格包括分层体系结构、管道-过滤器、客户端-服务器、MVC等。",
+    keyPoints: [
+      "分层体系结构",
+      "管道-过滤器风格",
+      "客户端-服务器",
+      "浏览器-服务器（B/S）",
+      "MVC模式",
+      "微服务架构"
+    ],
+    examTip: "掌握常见体系结构风格的特点及应用",
+    pageRef: "第8章 8.1.4节"
+  },
+  {
+    id: "textbook_49",
+    lecture: 5,
+    topic: "体系结构设计",
+    title: "包图、部署图、构件图",
+    definition: "UML中的包图用于组织模型元素，部署图描述系统物理部署，构件图描述软件构件及其关系。",
+    keyPoints: [
+      "包图：组织和管理模型元素",
+      "部署图：节点和构件的映射",
+      "构件图：软件构件及依赖关系",
+      "体系结构视图表达"
+    ],
+    examTip: "了解这三种图的作用和画法",
+    pageRef: "第8章 8.2节"
+  },
+
+  // 第9章 用户界面设计
+  {
+    id: "textbook_50",
+    lecture: 6,
+    topic: "用户界面设计",
+    title: "人机交互方式",
+    definition: "人机交互方式包括命令行界面、图形用户界面、自然语言界面、语音交互、手势交互等。",
+    keyPoints: [
+      "命令行界面（CLI）",
+      "图形用户界面（GUI）",
+      "自然语言界面",
+      "多点触控",
+      "语音交互",
+      "虚拟现实/增强现实"
+    ],
+    examTip: "了解各种交互方式的特点和发展趋势",
+    pageRef: "第9章 9.1.1节"
+  },
+  {
+    id: "textbook_51",
+    lecture: 6,
+    topic: "用户界面设计",
+    title: "用户界面设计原则",
+    definition: "用户界面设计应遵循一致性、反馈、容错、简洁、美观等原则，提供良好的用户体验。",
+    keyPoints: [
+      "一致性：统一风格和操作",
+      "反馈：及时响应用户操作",
+      "容错：防止和恢复错误",
+      "简洁：界面清晰易懂",
+      "美观：视觉舒适",
+      "用户控制：用户主导操作"
+    ],
+    examTip: "掌握用户界面设计的主要原则",
+    pageRef: "第9章 9.3.2节"
+  },
+
+  // 第10章 软件详细设计
+  {
+    id: "textbook_52",
+    lecture: 6,
+    topic: "软件详细设计",
+    title: "详细设计任务",
+    definition: "详细设计是在体系结构设计基础上，对每个模块进行精细化设计，确定算法、数据结构、接口等实现细节。",
+    keyPoints: [
+      "算法设计",
+      "数据结构设计",
+      "接口设计",
+      "类设计",
+      "数据库设计"
+    ],
+    examTip: "理解详细设计的任务和目标",
+    pageRef: "第10章 10.1.2节"
+  },
+  {
+    id: "textbook_53",
+    lecture: 6,
+    topic: "软件详细设计",
+    title: "设计模式",
+    definition: "设计模式是解决软件设计问题的可复用方案，分为创建型、结构型和行为型三大类。",
+    keyPoints: [
+      "创建型模式：工厂、单例、建造者等",
+      "结构型模式：适配器、装饰器、代理等",
+      "行为型模式：观察者、策略、模板方法等",
+      "GoF 23种设计模式"
+    ],
+    examTip: "掌握常见设计模式的结构和应用场景",
+    pageRef: "第10章 10.3节"
+  },
+  {
+    id: "textbook_54",
+    lecture: 6,
+    topic: "软件详细设计",
+    title: "类设计",
+    definition: "类设计是确定类的属性、方法及类间关系的过程，是面向对象详细设计的核心。",
+    keyPoints: [
+      "确定类的属性",
+      "确定类的方法",
+      "确定类间关系",
+      "可见性设计",
+      "状态图描述行为"
+    ],
+    examTip: "掌握类设计的步骤和方法",
+    pageRef: "第10章 10.5节"
+  },
+  {
+    id: "textbook_55",
+    lecture: 6,
+    topic: "软件详细设计",
+    title: "数据设计",
+    definition: "数据设计是确定系统数据存储结构、数据操作和数据约束的过程，包括数据库设计和数据结构设计。",
+    keyPoints: [
+      "确定持久化数据",
+      "数据存储方式",
+      "数据组织方式",
+      "数据操作设计",
+      "数据库设计"
+    ],
+    examTip: "理解数据设计的主要任务",
+    pageRef: "第10章 10.6节"
+  },
+
+  // 第11-12章 软件实现
+  {
+    id: "textbook_56",
+    lecture: 7,
+    topic: "软件实现",
+    title: "软件实现",
+    definition: "软件实现是将设计转换为可执行代码的过程，包括编码、单元测试和调试。",
+    keyPoints: [
+      "选择编程语言",
+      "编写代码",
+      "单元测试",
+      "代码审查",
+      "调试"
+    ],
+    examTip: "理解软件实现的主要活动",
+    pageRef: "第11章 11.1.1节"
+  },
+  {
+    id: "textbook_57",
+    lecture: 7,
+    topic: "软件实现",
+    title: "程序设计语言选择",
+    definition: "程序设计语言的选择应考虑项目需求、团队技能、性能要求、生态系统等因素。",
+    keyPoints: [
+      "语言分类：低级/高级、编译/解释",
+      "项目需求匹配",
+      "团队技术栈",
+      "性能和效率",
+      "开发工具和生态"
+    ],
+    examTip: "了解编程语言的选择因素",
+    pageRef: "第11章 11.2节"
+  },
+  {
+    id: "textbook_58",
+    lecture: 7,
+    topic: "软件实现",
+    title: "软件缺陷",
+    definition: "软件缺陷是指软件中存在的错误，导致软件不能完成规定功能或产生错误结果。缺陷、错误和失效是相关概念。",
+    keyPoints: [
+      "缺陷（Defect）：代码中的错误",
+      "错误（Error）：人为失误",
+      "失效（Failure）：运行时错误表现",
+      "缺陷描述和跟踪",
+      "缺陷状态管理"
+    ],
+    examTip: "区分缺陷、错误和失效的概念",
+    pageRef: "第12章 12.4.1节"
+  },
+
+  // 第13章 软件测试
+  {
+    id: "textbook_59",
+    lecture: 8,
+    topic: "软件测试",
+    title: "软件测试",
+    definition: "软件测试是通过执行程序来发现缺陷的过程，目的是验证软件是否满足需求，提高软件质量。",
+    keyPoints: [
+      "验证和确认",
+      "测试用例设计",
+      "测试执行",
+      "缺陷发现",
+      "质量保证"
+    ],
+    examTip: "理解软件测试的目的和原则",
+    pageRef: "第13章 13.1.1节"
+  },
+  {
+    id: "textbook_60",
+    lecture: 8,
+    topic: "软件测试",
+    title: "测试级别",
+    definition: "软件测试分为单元测试、集成测试、确认测试和系统测试四个级别，逐级验证软件质量。",
+    keyPoints: [
+      "单元测试：测试单个模块",
+      "集成测试：测试模块间交互",
+      "确认测试：验证需求满足",
+      "系统测试：测试完整系统",
+      "验收测试：用户验收"
+    ],
+    examTip: "重点掌握各测试级别的目标和区别",
+    pageRef: "第13章 13.2节"
+  },
+  {
+    id: "textbook_61",
+    lecture: 8,
+    topic: "软件测试",
+    title: "白盒测试",
+    definition: "白盒测试是基于程序内部结构的测试方法，关注代码逻辑路径，包括语句覆盖、分支覆盖、路径覆盖等。",
+    keyPoints: [
+      "语句覆盖：每条语句至少执行一次",
+      "分支覆盖：每个分支至少执行一次",
+      "条件覆盖：每个条件取各种值",
+      "路径覆盖：执行所有路径",
+      "基本路径测试"
+    ],
+    examTip: "重点掌握各种覆盖标准及测试用例设计",
+    pageRef: "第13章 13.3.1节"
+  },
+  {
+    id: "textbook_62",
+    lecture: 8,
+    topic: "软件测试",
+    title: "黑盒测试",
+    definition: "黑盒测试是基于软件功能的测试方法，不关注内部实现，包括等价类划分、边界值分析、因果图等。",
+    keyPoints: [
+      "等价类划分：有效/无效等价类",
+      "边界值分析：测试边界情况",
+      "因果图：分析输入组合",
+      "决策表测试",
+      "基于场景的测试"
+    ],
+    examTip: "重点掌握等价类划分和边界值分析",
+    pageRef: "第13章 13.3.2节"
+  },
+  {
+    id: "textbook_63",
+    lecture: 8,
+    topic: "软件测试",
+    title: "非功能测试",
+    definition: "非功能测试是测试软件的性能、安全性、可靠性等非功能特性，确保满足质量要求。",
+    keyPoints: [
+      "性能测试：负载、压力、并发",
+      "安全性测试：渗透测试",
+      "兼容性测试",
+      "可靠性测试",
+      "可用性测试"
+    ],
+    examTip: "了解非功能测试的主要类型",
+    pageRef: "第13章 13.3.3节"
+  },
+  {
+    id: "textbook_64",
+    lecture: 8,
+    topic: "软件测试",
+    title: "面向对象测试",
+    definition: "面向对象测试针对面向对象软件的特点，包括交互测试、继承测试等，关注类的封装、继承和多态。",
+    keyPoints: [
+      "类测试",
+      "交互测试",
+      "继承测试",
+      "多态测试",
+      "基于状态的测试"
+    ],
+    examTip: "了解面向对象测试的特殊性",
+    pageRef: "第13章 13.4节"
+  },
+
+  // 第14章 软件部署
+  {
+    id: "textbook_65",
+    lecture: 9,
+    topic: "软件部署",
+    title: "软件部署",
+    definition: "软件部署是将软件系统安装到运行环境并使其可使用的过程，包括部署计划、安装、配置和发布。",
+    keyPoints: [
+      "部署计划",
+      "环境准备",
+      "软件安装",
+      "配置管理",
+      "发布上线",
+      "回滚方案"
+    ],
+    examTip: "理解软件部署的主要步骤",
+    pageRef: "第14章 14.2节"
+  },
+  {
+    id: "textbook_66",
+    lecture: 9,
+    topic: "软件部署",
+    title: "部署方式",
+    definition: "软件部署方式包括单机部署和分布式部署，根据系统架构选择合适的部署策略。",
+    keyPoints: [
+      "单机部署",
+      "分布式部署",
+      "集群部署",
+      "云部署",
+      "容器化部署"
+    ],
+    examTip: "了解不同部署方式的特点",
+    pageRef: "第14章 14.3节"
+  },
+
+  // 第15章 软件维护和演化
+  {
+    id: "textbook_67",
+    lecture: 9,
+    topic: "软件维护和演化",
+    title: "软件维护",
+    definition: "软件维护是在软件交付后为改正错误、改进性能或适应环境变化而修改软件的过程。",
+    keyPoints: [
+      "改正性维护：修复缺陷",
+      "适应性维护：适应新环境",
+      "完善性维护：增加新功能",
+      "预防性维护：提高可维护性"
+    ],
+    examTip: "重点掌握四种维护类型",
+    pageRef: "第15章 15.1.1节"
+  },
+  {
+    id: "textbook_68",
+    lecture: 9,
+    topic: "软件维护和演化",
+    title: "软件演化",
+    definition: "软件演化是指软件在使用过程中不断修改和扩展以适应变化需求的过程，遵循一定的演化法则。",
+    keyPoints: [
+      "软件持续变化",
+      "复杂度增加",
+      "演化法则",
+      "重构",
+      "技术债务"
+    ],
+    examTip: "理解软件演化的概念和法则",
+    pageRef: "第15章 15.2.1节"
+  },
+  {
+    id: "textbook_69",
+    lecture: 9,
+    topic: "软件维护和演化",
+    title: "软件逻辑老化",
+    definition: "软件逻辑老化是指软件随着时间推移，由于需求变化、环境变化等原因导致软件质量下降、难以维护的现象。",
+    keyPoints: [
+      "老化原因：需求变化、技术更新",
+      "老化表现：代码腐化、文档缺失",
+      "解决方法：重构、重写",
+      "技术债务管理"
+    ],
+    examTip: "理解软件老化的原因和应对措施",
+    pageRef: "第15章 15.3.1节"
+  },
+
+  // 第16章 软件项目管理
+  {
+    id: "textbook_70",
+    lecture: 10,
+    topic: "软件项目管理",
+    title: "软件项目",
+    definition: "软件项目是为创建独特的软件产品或服务而进行的临时性工作，具有明确目标、时间约束和资源限制。",
+    keyPoints: [
+      "临时性：有明确起止时间",
+      "独特性：产品独一无二",
+      "渐进明细：逐步细化",
+      "目标明确",
+      "资源有限"
+    ],
+    examTip: "理解软件项目的特点",
+    pageRef: "第16章 16.1.1节"
+  },
+  {
+    id: "textbook_71",
+    lecture: 10,
+    topic: "软件项目管理",
+    title: "软件度量与估算",
+    definition: "软件度量是对软件产品、过程或资源的定量测量，软件估算是对项目规模、成本、进度等的预测。",
+    keyPoints: [
+      "规模度量：代码行、功能点",
+      "复杂度度量：圈复杂度",
+      "质量度量：缺陷密度",
+      "成本估算：COCOMO模型",
+      "进度估算"
+    ],
+    examTip: "掌握常用软件度量和估算方法",
+    pageRef: "第16章 16.2节"
+  },
+  {
+    id: "textbook_72",
+    lecture: 10,
+    topic: "软件项目管理",
+    title: "软件项目计划",
+    definition: "软件项目计划是确定项目目标、范围、进度、资源、风险等的过程，产出项目计划文档。",
+    keyPoints: [
+      "范围计划",
+      "进度计划：甘特图、PERT图",
+      "资源计划",
+      "成本计划",
+      "质量计划",
+      "风险计划"
+    ],
+    examTip: "掌握项目计划的主要内容和工具",
+    pageRef: "第16章 16.3.1节"
+  },
+  {
+    id: "textbook_73",
+    lecture: 10,
+    topic: "软件项目管理",
+    title: "软件配置管理",
+    definition: "软件配置管理是对软件产品及其变更进行标识、控制、审计和记录的过程，确保软件完整性。",
+    keyPoints: [
+      "配置项标识",
+      "版本控制",
+      "变更控制",
+      "配置审计",
+      "基线管理"
+    ],
+    examTip: "掌握配置管理的主要活动",
+    pageRef: "第16章 16.5.1节"
+  },
+  {
+    id: "textbook_74",
+    lecture: 10,
+    topic: "软件项目管理",
+    title: "软件风险管理",
+    definition: "软件风险管理是识别、分析、应对和监控项目风险的过程，目的是降低风险对项目的不利影响。",
+    keyPoints: [
+      "风险识别",
+      "风险分析：概率和影响",
+      "风险应对：规避、转移、减轻、接受",
+      "风险监控",
+      "风险类型：技术、人员、进度等"
+    ],
+    examTip: "重点掌握风险管理过程和应对策略",
+    pageRef: "第16章 16.6.1节"
+  },
+  {
+    id: "textbook_75",
+    lecture: 10,
+    topic: "软件项目管理",
+    title: "软件质量保证",
+    definition: "软件质量保证是确保软件过程和产品符合既定标准和规范的活动，包括质量计划、质量控制和质量改进。",
+    keyPoints: [
+      "质量计划",
+      "质量控制：评审、测试",
+      "质量改进",
+      "质量标准：ISO 9001、CMMI",
+      "质量保证活动"
+    ],
+    examTip: "理解质量保证的主要活动和方法",
+    pageRef: "第16章 16.7.1节"
+  }
+];
+  const quizBank = [
+  // ===== 选择题（2024-2025 试卷 + 课堂练习）=====
+  {
+    id: "q1", type: "choice", lecture: 1, topic: "软件基础",
+    question: "有关软件特点，以下描述不正确的是",
+    options: {
+      A: "软件是一种人工制品，也是一种抽象的逻辑制品",
+      B: "软件及生产不受物理定律约束，不会因为常年运行而出现物理层面的老化或磨损",
+      C: "软件的生产方式与传统意义的物理产品生产制造方式相同，都要经过设计",
+      D: "由于软件的逻辑性特点，软件的客户或用户常常最初时说不清楚软件需求"
+    },
+    answer: "C",
+    explanation: "软件的生产方式与传统物理产品不同，软件是逻辑制品，其生产不受物理定律约束。",
+    difficulty: 1, source: "2025 年试卷"
+  },
+  {
+    id: "q2", type: "choice", lecture: 1, topic: "软件基础",
+    question: "以下对软件的利益相关者描述正确的是",
+    options: {
+      A: "与软件发生交互的其他系统（如物理硬件系统、遗留系统）并不属于软件的利益相关者",
+      B: "任何软件都有其利益相关者，他们可以是软件系统的受益者",
+      C: "软件开发和测试人员是项目团队的研发成员，不是软件的利益相关者",
+      D: "软件需求分析工作只与软件需求工程师相关，软件的客户和用户没有职责和义务提出软件需求"
+    },
+    answer: "B",
+    explanation: "任何软件都有利益相关者，包括受益者、与软件交互的其他系统、开发测试人员、客户和用户等。",
+    difficulty: 1, source: "2025 年试卷"
+  },
+  {
+    id: "q3", type: "choice", lecture: 6, topic: "软件测试",
+    question: "以下对软件测试的描述不正确的是",
+    options: {
+      A: "在实际的软件开发过程中，软件测试投入的工作量并不多",
+      B: "软件测试的对象是目标软件系统的程序代码，而非高层的软件模型和文档",
+      C: "软件测试是通过运行程序代码的方式来发现程序代码中潜藏的缺陷",
+      D: "软件测试可用于发现程序代码中的缺陷，但不能用于证明代码是正确的"
+    },
+    answer: "B",
+    explanation: "软件测试的对象不仅是程序代码，还包括高层的软件模型和文档。注意 A 选项描述也是不正确的（测试投入工作量通常很大），但 B 更明显错误。",
+    difficulty: 2, source: "2025 年试卷"
+  },
+  {
+    id: "q4", type: "choice", lecture: 5, topic: "软件设计",
+    question: "以下对软件设计描述正确的是",
+    options: {
+      A: "软件详细设计过程，按顺序是用例设计、类设计、数据设计、体系结构设计",
+      B: "软件详细设计的输入是软件需求、用户界面设计和对软件实现的约束和限制三类",
+      C: "设计类图中的结点包括用例设计模型中相关对象所对应的类，还包括构成软件系统的各个子系统或构件，或在设计中新引进的设计类",
+      D: "用例设计的输入是用例模型、用例交互模型（顺序图）和分析类模型三类"
+    },
+    answer: "D",
+    explanation: "用例设计的输入是用例模型、用例交互模型（顺序图）和分析类模型三类。A 选项顺序错误，体系结构设计在详细设计之前。",
+    difficulty: 3, source: "2025 年试卷"
+  },
+  {
+    id: "q5", type: "choice", lecture: 5, topic: "软件体系结构",
+    question: "有关软件体系结构设计，以下描述不正确的是",
+    options: {
+      A: "通常用 UML 的部署图、包图、类图、构件图等来表示软件体系结构的视图",
+      B: "软件体系结构设计质量将直接决定整个软件系统的质量",
+      C: "软件体系结构设计体现了系统最早的设计决策",
+      D: "软件体系结构设计可为编码实现工作提供具体指导"
+    },
+    answer: "A",
+    explanation: "软件体系结构视图通常用部署图、包图等表示，但不包括类图和构件图（这些属于详细设计层面）。",
+    difficulty: 3, source: "2025 年试卷"
+  },
+  {
+    id: "q6", type: "choice", lecture: 2, topic: "软件工程概述",
+    question: "下面选项中，哪一项不属于软件工程的三要素",
+    options: { A: "过程", B: "工具", C: "开发", D: "方法" },
+    answer: "C",
+    explanation: "软件工程三要素是：过程、工具、方法。'开发'不是三要素之一。",
+    difficulty: 1, source: "2024 年试卷"
+  },
+  {
+    id: "q7", type: "choice", lecture: 1, topic: "软件分类",
+    question: "在软件工程中，软件通常可以根据其用途和功能进行分类。以下哪个选项正确描述了此类的软件分类？",
+    options: {
+      A: "系统软件、应用软件和支撑软件",
+      B: "开源软件、闭源软件和混合软件",
+      C: "传统软件、云计算软件和边缘计算软件",
+      D: "商业软件、免费软件和试用软件"
+    },
+    answer: "A",
+    explanation: "软件按用途和功能分为系统软件、应用软件和支撑软件三类。",
+    difficulty: 1, source: "2024 年试卷"
+  },
+  {
+    id: "q8", type: "choice", lecture: 6, topic: "软件测试",
+    question: "在软件测试中，一个测试用例通常由一个四元偶 (T,S,I,O) 表示。以下哪个选项正确描述了这四个属性？",
+    options: {
+      A: "T 表示测试数据，S 表示系统状态，I 表示输入，O 表示输出",
+      B: "T 表示测试用例标识，S 表示前置条件，I 表示测试输入，O 表示预期输出",
+      C: "T 表示时间，S 表示步骤，I 表示接口，O 表示结果",
+      D: "T 表示测试工具，S 表示软件版本，I 表示问题描述，O 表示解决方案"
+    },
+    answer: "B",
+    explanation: "测试用例四元组：T-测试用例标识 (Test case ID)，S-前置条件 (Setup)，I-测试输入 (Input)，O-预期输出 (Output)。",
+    difficulty: 1, source: "2024 年试卷"
+  },
+  {
+    id: "q9", type: "choice", lecture: 5, topic: "软件设计",
+    question: "以下对软件设计描述正确的是",
+    options: {
+      A: "软件设计主要关注于代码的编写和优化，确保软件的运行效率和可维护性",
+      B: "软件设计包括创建系统的总体结构、定义各个模块及其接口、设计数据存储和管理方案、并制定详细的模块实现方案，以确保系统的功能性、可扩展性、和可维护性",
+      C: "软件设计的主要任务是编写详细的需求文档，并与客户反复确认，确保需求被准确理解和记录",
+      D: "软件设计仅涉及用户界面和体验的设计，确保最终用户的满意度和易用性"
+    },
+    answer: "B",
+    explanation: "软件设计包括总体结构、模块接口、数据存储和详细实现方案，确保功能性、可扩展性和可维护性。",
+    difficulty: 2, source: "2024 年试卷"
+  },
+
+  // ===== 判断题（2024-2025 试卷 + 课堂练习）=====
+  {
+    id: "q10", type: "judge", lecture: 1, topic: "软件基础",
+    question: "软件是一种人工制品，是一种抽象的逻辑制品。",
+    answer: true,
+    explanation: "正确。软件是人工制品，也是抽象的逻辑制品。",
+    difficulty: 1, source: "2024 年试卷"
+  },
+  {
+    id: "q11", type: "judge", lecture: 4, topic: "需求工程",
+    question: "需求工程是一个包括需求获取、需求分析、需求验证和需求管理的连续过程。",
+    answer: true,
+    explanation: "正确。需求工程包括需求获取、需求分析、需求验证和需求管理四个连续过程。",
+    difficulty: 1, source: "2024 年试卷"
+  },
+  {
+    id: "q12", type: "judge", lecture: 6, topic: "软件测试",
+    question: "软件测试可用于发现程序代码中的缺陷，能用于证明软件是正确的。",
+    answer: false,
+    explanation: "错误。软件测试可以发现缺陷，但不能证明软件是正确的。这是测试的基本原理。",
+    difficulty: 1, source: "2024 年试卷"
+  },
+  {
+    id: "q13", type: "judge", lecture: 5, topic: "软件设计",
+    question: "软件详细设计的过程包括用例设计、类设计、数据设计和体系结构设计。",
+    answer: false,
+    explanation: "错误。软件详细设计包括用例设计、类设计和数据设计，体系结构设计在详细设计之前进行，不属于详细设计。",
+    difficulty: 2, source: "2024 年试卷"
+  },
+  {
+    id: "q14", type: "judge", lecture: 3, topic: "群体化开发",
+    question: "Github 是由我国管辖的在世界上具有较大影响力的开源软件托管平台。",
+    answer: false,
+    explanation: "错误。GitHub 由美国微软公司管辖，不是由中国管辖。",
+    difficulty: 1, source: "2024 年试卷"
+  },
+  {
+    id: "q15", type: "judge", lecture: 5, topic: "UML",
+    question: "统一建模语言（UML）是一种用于软件设计的标准建模语言。",
+    answer: true,
+    explanation: "正确。UML 是软件设计的标准建模语言。",
+    difficulty: 1, source: "2024 年试卷"
+  },
+  {
+    id: "q16", type: "judge", lecture: 3, topic: "过程模型",
+    question: "在瀑布模型中，所有阶段都是线性顺序进行，不能回退到前一阶段。",
+    answer: false,
+    explanation: "错误。瀑布模型虽然主要是线性顺序的，但在实际中可以回退到前一阶段，只是代价很高。",
+    difficulty: 2, source: "2024 年试卷"
+  },
+  {
+    id: "q17", type: "judge", lecture: 7, topic: "软件维护",
+    question: "软件维护主要是对软件的错误进行修复，不涉及功能改进和性能优化。",
+    answer: false,
+    explanation: "错误。软件维护不仅包括纠正性维护（修复错误），还包括改善性维护（功能改进和性能优化）和适应性维护（适应环境变化）。",
+    difficulty: 1, source: "2024 年试卷"
+  },
+  {
+    id: "q18", type: "judge", lecture: 7, topic: "软件演化",
+    question: "软件演化是指针对软件的大规模功能增强和结构调整，以实现变化的软件需求或提高软件系统的质量。",
+    answer: true,
+    explanation: "正确。这是软件演化的标准定义。",
+    difficulty: 1, source: "2024 年试卷"
+  },
+  {
+    id: "q19", type: "judge", lecture: 6, topic: "软件测试",
+    question: "软件测试仅能在开发完成后进行，不能融入在其他软件生命周期中。",
+    answer: false,
+    explanation: "错误。软件测试可以融入软件生命周期的各个阶段，如单元测试在编码阶段进行。",
+    difficulty: 1, source: "2024 年试卷"
+  },
+  {
+    id: "q20", type: "judge", lecture: 3, topic: "群体化开发",
+    question: "Github 作为开源软件托管平台，由我国管辖，在世界上具有较大影响力。",
+    answer: false,
+    explanation: "错误。GitHub 由美国微软公司管辖，不是由中国管辖。",
+    difficulty: 1, source: "课堂练习题"
+  },
+  {
+    id: "q21", type: "judge", lecture: 3, topic: "过程模型",
+    question: "在瀑布模型中，所有阶段都是线性顺序进行，不能回退到前一阶段。",
+    answer: false,
+    explanation: "错误。瀑布模型虽然主要是线性顺序的，但在实际中可以回退到前一阶段，只是代价很高。",
+    difficulty: 2, source: "课堂练习题"
+  },
+  {
+    id: "q22", type: "judge", lecture: 1, topic: "软件分类",
+    question: "淘宝、京东、微信这类 App 在人们生活和工作中越来越重要，因此它们可上升为系统软件。",
+    answer: false,
+    explanation: "错误。淘宝、京东、微信等 App 属于应用软件，不是系统软件。系统软件是管理和控制计算机硬件与系统资源的软件。",
+    difficulty: 1, source: "课堂练习题"
+  },
+  {
+    id: "q23", type: "judge", lecture: 5, topic: "用户界面",
+    question: "人机交互常见的方式包括文本交互方式、图形化界面交互方式、语音交互方式和姿势交互方式。",
+    answer: true,
+    explanation: "正确。四种常见的人机交互方式：文本、图形化界面、语音和姿势交互。",
+    difficulty: 1, source: "课堂练习题"
+  },
+  {
+    id: "q24", type: "judge", lecture: 1, topic: "开源软件",
+    question: "开源软件是一种源代码可以自由获取和传播的计算机软件，其拥有者通过开源许可证赋予被许可人对软件进行使用、修改和传播的权力。",
+    answer: true,
+    explanation: "正确。这是开源软件的标准定义。",
+    difficulty: 1, source: "课堂练习题"
+  },
+  {
+    id: "q25", type: "judge", lecture: 7, topic: "软件维护",
+    question: "据统计，在所有维护中纠正性维护所占比重最大。",
+    answer: false,
+    explanation: "错误。在所有维护中，改善性维护所占比重最大，而非纠正性维护。",
+    difficulty: 2, source: "课堂练习题"
+  },
+  {
+    id: "q26", type: "judge", lecture: 7, topic: "软件演化",
+    question: "软件演化是指针对软件的大规模功能增强和结构调整，以实现变化的软件需求或提高软件系统的质量。",
+    answer: true,
+    explanation: "正确。这是软件演化的标准定义。",
+    difficulty: 1, source: "课堂练习题"
+  },
+  {
+    id: "q27", type: "judge", lecture: 4, topic: "需求分析",
+    question: "需求分析阶段的工作完成后，产生的软件制品包括软件原型、软件需求模型和软件需求文档。",
+    answer: true,
+    explanation: "正确。需求分析阶段的制品包括软件原型、软件需求模型和软件需求文档。",
+    difficulty: 1, source: "课堂练习题"
+  },
+  {
+    id: "q28", type: "judge", lecture: 1, topic: "文档",
+    question: "文档是记录软件开发活动和阶段性成果、软件配置及变更等的说明性资料。",
+    answer: true,
+    explanation: "正确。这是文档的标准定义。",
+    difficulty: 1, source: "课堂练习题"
+  },
+  {
+    id: "q29", type: "judge", lecture: 4, topic: "需求分析",
+    question: "软件的开发约束需求是指软件的利益相关者对软件的开发成本、交付进度、技术选型、遵循标准及安全性等方面提出的要求。",
+    answer: true,
+    explanation: "正确。开发约束需求涵盖成本、进度、技术选型、标准和安全性等方面。",
+    difficulty: 1, source: "课堂练习题"
+  },
+
+  // ===== 名词解释题（2024-2025 试卷）=====
+  {
+    id: "q30", type: "definition", lecture: 3, topic: "过程模型",
+    question: "原型",
+    answer: "原型是软件的一个早期可运行版本，用于验证需求或技术方案的可行性。可分为抛弃型原型和演化型原型。",
+    difficulty: 1, source: "2025 年试卷"
+  },
+  {
+    id: "q31", type: "definition", lecture: 2, topic: "软件工程概述",
+    question: "软件工程",
+    answer: "软件工程是将系统化、规范化、可度量的方法应用于软件的开发、运行和维护的过程。其三要素为过程、工具和方法。",
+    difficulty: 1, source: "2025 年试卷"
+  },
+  {
+    id: "q32", type: "definition", lecture: 2, topic: "软件工程概述",
+    question: "模块化原则",
+    answer: "将软件系统划分为若干个相对独立的模块，每个模块完成一个特定的子功能，所有模块按某种方式组装成一个整体。追求高内聚低耦合。",
+    difficulty: 1, source: "2025 年试卷"
+  },
+  {
+    id: "q33", type: "definition", lecture: 6, topic: "软件测试",
+    question: "软件缺陷",
+    answer: "软件缺陷是指程序中存在的错误或缺陷，导致软件不能正确完成预期功能。",
+    difficulty: 1, source: "2025 年试卷"
+  },
+  {
+    id: "q34", type: "definition", lecture: 7, topic: "软件维护",
+    question: "改善性维护",
+    answer: "改善性维护是指为了改进软件的性能、可维护性或其他质量属性而进行的维护活动。",
+    difficulty: 1, source: "2025 年试卷"
+  },
+  {
+    id: "q35", type: "definition", lecture: 1, topic: "软件基础",
+    question: "软件生存周期",
+    answer: "软件生存周期是指软件从概念提出到最终退役的整个过程，包括需求分析、设计、实现、测试、部署、维护与演化等阶段。",
+    difficulty: 1, source: "2024 年试卷"
+  },
+  {
+    id: "q36", type: "definition", lecture: 2, topic: "软件工程概述",
+    question: "强（高）内聚低耦合",
+    answer: "高内聚指模块内部元素紧密相关，每个模块只完成一个相对独立的特定功能；低耦合指模块间依赖关系尽量少，模块通过简单接口交互。这一原则有助于提高软件的可维护性、可复用性和可测试性。",
+    difficulty: 2, source: "2024 年试卷"
+  },
+  {
+    id: "q37", type: "definition", lecture: 6, topic: "软件性能",
+    question: "系统响应时间",
+    answer: "系统响应时间是指从用户发出请求到系统返回响应结果所经历的时间间隔，是衡量软件系统性能的重要指标之一。",
+    difficulty: 1, source: "2024 年试卷"
+  },
+  {
+    id: "q38", type: "definition", lecture: 6, topic: "软件测试",
+    question: "确认测试",
+    answer: "确认测试（又称系统测试）是在集成测试完成后，验证软件系统是否满足需求规格的测试活动。测试对象是整个软件系统，依据是需求文档。",
+    difficulty: 2, source: "2024 年试卷"
+  },
+  {
+    id: "q39", type: "definition", lecture: 7, topic: "软件维护",
+    question: "适应性维护",
+    answer: "适应性维护是指为了使软件适应变化的运行环境（如操作系统升级、硬件更换）而进行的维护活动。",
+    difficulty: 1, source: "2024 年试卷"
+  },
+  {
+    id: "q40", type: "definition", lecture: 1, topic: "软件分类",
+    question: "应用软件/系统软件/支撑软件",
+    answer: "系统软件：管理和控制计算机硬件与系统资源的软件（如操作系统）；应用软件：面向特定应用领域，为用户完成具体任务的软件（如微信）；支撑软件：协助开发和维护其他软件的工具软件（如 IDE）。",
+    difficulty: 1, source: "复习材料"
+  },
+  {
+    id: "q41", type: "definition", lecture: 1, topic: "开源软件",
+    question: "开源软件",
+    answer: "开源软件是一种源代码可以自由获取和传播的计算机软件，其拥有者通过开源许可证赋予被许可人对软件进行使用、修改和传播的权力。",
+    difficulty: 1, source: "复习材料"
+  },
+  {
+    id: "q42", type: "definition", lecture: 2, topic: "软件工程概述",
+    question: "信息隐藏原则",
+    answer: "模块内部的信息（数据和方法）对外部模块是不可见的，模块只通过接口与外部交互，以降低模块间的依赖，提高可维护性。",
+    difficulty: 1, source: "复习材料"
+  },
+  {
+    id: "q43", type: "definition", lecture: 2, topic: "软件工程概述",
+    question: "双向追踪原则",
+    answer: "需求与设计之间、设计与代码之间应建立双向追踪关系，确保每个需求都有对应的设计和实现，每个实现都可追溯到需求。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q44", type: "definition", lecture: 3, topic: "群体化开发",
+    question: "群体化开发方法",
+    answer: "群体化开发方法是指利用大规模群体的智慧和力量来共同完成软件开发任务的方法。典型代表是开源软件开发。",
+    difficulty: 1, source: "复习材料"
+  },
+  {
+    id: "q45", type: "definition", lecture: 4, topic: "需求分析",
+    question: "软件需求",
+    answer: "软件需求要从两个角度定义：从软件自身角度，包括功能需求和非功能需求；从软件利益相关者角度，包括用户需求和系统需求。描述了软件应该做什么、不做什么，以及质量和约束要求。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q46", type: "definition", lecture: 4, topic: "需求工程",
+    question: "需求工程",
+    answer: "需求工程是一个包括需求获取、需求分析、需求验证和需求管理的连续过程。",
+    difficulty: 1, source: "复习材料"
+  },
+  {
+    id: "q47", type: "definition", lecture: 4, topic: "需求分析",
+    question: "边界类/控制类/实体类",
+    answer: "边界类：负责系统与外部参与者之间的交互；控制类：负责业务逻辑控制和协调；实体类：负责持久化数据的存储和管理。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q48", type: "definition", lecture: 5, topic: "软件设计",
+    question: "构件",
+    answer: "构件是软件系统中可独立部署、可替换的组成部分，它遵循一组公开的接口规范，可以被其他软件组件复用和组合。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q49", type: "definition", lecture: 6, topic: "软件实现",
+    question: "软件实现（的任务）",
+    answer: "软件实现的任务是将软件设计转化为可执行的程序代码，包括编码、单元测试和代码审查等活动。",
+    difficulty: 1, source: "复习材料"
+  },
+  {
+    id: "q50", type: "definition", lecture: 6, topic: "软件测试",
+    question: "安全性测试",
+    answer: "安全性测试是验证软件系统的安全防护措施是否有效，能否抵御未授权访问和攻击的测试活动。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q51", type: "definition", lecture: 6, topic: "软件测试",
+    question: "回归测试",
+    answer: "回归测试是在软件修改后重新执行之前的测试用例，以确保修改没有引入新的缺陷并且原有功能仍然正常工作。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q52", type: "definition", lecture: 6, topic: "软件测试",
+    question: "软件 beta 版",
+    answer: "软件 beta 版是在用户实际使用环境中进行公开测试的软件版本，由用户独立使用并反馈问题。",
+    difficulty: 1, source: "复习材料"
+  },
+  {
+    id: "q53", type: "definition", lecture: 6, topic: "软件部署",
+    question: "软件部署",
+    answer: "软件部署是将开发完成的软件系统安装到运行环境并使其可用的过程。",
+    difficulty: 1, source: "复习材料"
+  },
+  {
+    id: "q54", type: "definition", lecture: 7, topic: "软件维护",
+    question: "纠正性维护",
+    answer: "纠正性维护是指在软件交付后，为修复已发现的缺陷而进行的维护活动。",
+    difficulty: 1, source: "复习材料"
+  },
+  {
+    id: "q55", type: "definition", lecture: 7, topic: "软件维护",
+    question: "软件逻辑老化",
+    answer: "软件逻辑老化是指软件在长期运行过程中，由于外部环境变化或业务需求变化，导致原有逻辑不再适用的现象。它不是物理老化，是逻辑层面的老化。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q56", type: "definition", lecture: 4, topic: "需求分析",
+    question: "软件系统的利益相关方",
+    answer: "软件系统的利益相关方是指与软件系统有利益关系的个人或组织，包括软件的受益者（客户、用户）、开发者、测试人员，以及与软件交互的其他系统。",
+    difficulty: 2, source: "复习材料"
+  },
+
+  // ===== 简答题（2024-2025 试卷 + 复习材料）=====
+  {
+    id: "q57", type: "short", lecture: 4, topic: "需求工程",
+    question: "请写出需求工程的一般性过程。",
+    answer: "需求工程包括四个连续过程：1.需求获取：从利益相关者收集需求；2.需求分析：分析和整理需求，建立需求模型；3.需求验证：确认需求的正确性和完整性；4.需求管理：管理需求变更。",
+    difficulty: 2, source: "2025 年试卷"
+  },
+  {
+    id: "q58", type: "short", lecture: 6, topic: "编码",
+    question: "请结合例子写出编写高质量代码要注意的问题（至少写 5 条）。",
+    answer: "编码原则：1.可读性优先（变量名见名知意，如用 studentCount 而非 sc）；2.可维护性（避免硬编码，使用常量）；3.效率（避免不必要的循环嵌套）。编码风格：4.标识符命名规范（不使用保留字，长度适当，统一驼峰或下划线风格）；5.适当的注释（解释复杂逻辑，而非重复代码）。",
+    difficulty: 2, source: "2025 年试卷"
+  },
+  {
+    id: "q59", type: "short", lecture: 5, topic: "软件设计",
+    question: "请给出软件设计模型中的设计元素，并对它们分别加以解释。",
+    answer: "软件设计模型中的设计元素包括：1.边界类：处理系统与外部参与者之间的交互；2.控制类：实现业务逻辑和控制流程；3.实体类：管理持久化数据的存储。分别对应边界层、控制层和实体层。",
+    difficulty: 2, source: "2025 年试卷"
+  },
+  {
+    id: "q60", type: "short", lecture: 6, topic: "软件测试",
+    question: "请写出 alpha 测试和 beta 测试的联系与区别。",
+    answer: "Alpha 测试在开发者控制的环境中进行，开发者在场观察用户操作；Beta 测试在用户实际使用环境中进行，用户独立使用并反馈问题。Alpha 先于 Beta 进行。两者都是验收测试的形式，目的是发现只有用户才能发现的缺陷。",
+    difficulty: 2, source: "2025 年试卷"
+  },
+  {
+    id: "q61", type: "short", lecture: 1, topic: "开源软件",
+    question: "什么是开源软件，其和闭源软件相比，有什么优势和不足？",
+    answer: "开源软件是源代码可以自由获取和传播的软件，通过开源许可证授权。优势：透明度高、社区支持强、可定制性好、成本低。不足：安全风险（代码公开可能被利用）、维护依赖社区、可能缺乏商业支持、文档可能不完善。",
+    difficulty: 2, source: "2024 年试卷"
+  },
+  {
+    id: "q62", type: "short", lecture: 6, topic: "编码",
+    question: "编写程序代码时，标识符命名应该注意什么问题（至少写出 5 条）。",
+    answer: "1.见名知意（如 studentCount 而非 sc）；2.不使用编程语言保留字；3.长度适当，不宜过长或过短；4.统一命名风格（如统一驼峰命名法）；5.避免使用易混淆的字符（如 l 和 1，O 和 0）。",
+    difficulty: 2, source: "2024 年试卷"
+  },
+  {
+    id: "q63", type: "short", lecture: 5, topic: "软件设计",
+    question: "请完整写出软件设计的一般过程。",
+    answer: "软件设计的一般过程：1.体系结构设计（确定系统总体结构）；2.用户界面设计（设计人机交互界面）；3.详细设计，包括：用例设计→类设计→数据设计。",
+    difficulty: 2, source: "2024 年试卷"
+  },
+  {
+    id: "q64", type: "short", lecture: 6, topic: "软件测试",
+    question: "写出软件测试 V 模型的三种测试，和它们的测试对象是什么？",
+    answer: "V 模型将测试活动与开发活动对应起来：单元测试对应编码阶段，测试对象是程序模块；集成测试对应设计阶段，测试对象是模块间接口；确认测试（系统测试）对应需求阶段，测试对象是系统功能。V 模型左侧是开发，右侧是测试。",
+    difficulty: 2, source: "2024 年试卷"
+  },
+  {
+    id: "q65", type: "short", lecture: 1, topic: "软件基础",
+    question: "请结合例子解释文档重要性。",
+    answer: "文档是记录软件开发活动和阶段性成果、软件配置及变更等的说明性资料。例如：需求文档确保开发团队和客户对需求理解一致；设计文档为后续开发和维护提供参考；测试文档记录测试过程和结果，便于追溯。文档有助于团队协作、知识传承和软件维护。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q66", type: "short", lecture: 1, topic: "软件基础",
+    question: "软件的客户和用户两个概念有什么区别？",
+    answer: "客户是购买或委托开发软件的人或组织，负责决定需求、验收软件；用户是实际使用软件的人，关注软件的易用性和功能性。客户和用户可以是同一人，也可以不同。需求分析要兼顾两者。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q67", type: "short", lecture: 3, topic: "过程模型",
+    question: "请写出瀑布模型的特点和局限。",
+    answer: "特点：线性顺序进行，各阶段按固定顺序依次进行；文档驱动，阶段明确；前一阶段完成后才能进入下一阶段。局限：难以适应需求变化；后期才发现设计问题，修改代价高；用户只能在最后看到产品，风险大。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q68", type: "short", lecture: 3, topic: "过程模型",
+    question: "请写出瀑布模型、原型模型、增量模型和迭代模型各自的指导思想、关注点和适用的软件类型。",
+    answer: "瀑布模型：指导思想是文档驱动，关注阶段完整性，适合需求明确的项目。原型模型：指导思想是快速验证，关注需求确认，适合需求不明确的项目。增量模型：指导思想是分批交付，关注功能逐步增加，适合可分块交付的系统。迭代模型：指导思想是反复改进，关注逐步完善，适合需求会变化的项目。",
+    difficulty: 3, source: "复习材料"
+  },
+  {
+    id: "q69", type: "short", lecture: 3, topic: "过程模型",
+    question: "请介绍增量模型和迭代模型，并说出它们的异同。",
+    answer: "增量模型：将软件分成多个增量（批次）开发和交付，每个增量增加新功能。迭代模型：对软件进行反复改进，每次迭代完善已有功能。相同点：都是分阶段开发，都支持需求变化。不同点：增量模型每次增加新功能（横向扩展），迭代模型每次改进已有功能（纵向深化）。",
+    difficulty: 3, source: "复习材料"
+  },
+  {
+    id: "q70", type: "short", lecture: 3, topic: "群体化开发",
+    question: "群体化开发方法中的 issue 中文意思是什么？它在开发中具体指什么？",
+    answer: "issue 中文意思是'问题'或'议题'。在群体化开发中，issue 具体指开发过程中的问题报告、功能请求或任务项，用于跟踪和管理开发进度。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q71", type: "short", lecture: 3, topic: "群体化开发",
+    question: "版本管理中的分支是指什么？master 分支和 develop 分支有什么区别？",
+    answer: "分支是版本管理中从主线分出的独立开发线路。master 分支是主分支，存放稳定可发布的代码；develop 分支是开发分支，存放最新的开发成果。master 分支的代码通常是经过测试可以发布的版本。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q72", type: "short", lecture: 4, topic: "需求分析",
+    question: "请给出软件需求的类别并分别介绍它们。",
+    answer: "软件需求分为：功能需求（软件应该做什么）、非功能需求（性能、安全性、可用性等质量要求）、开发约束需求（成本、进度、技术选型、遵循标准及安全性等方面的要求）。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q73", type: "short", lecture: 4, topic: "需求分析",
+    question: "请写出获取软件需求的步骤。",
+    answer: "获取软件需求的步骤包括：1.识别利益相关者；2.确定需求获取方式；3.收集需求信息；4.整理和分析需求；5.形成需求文档。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q74", type: "short", lecture: 4, topic: "需求分析",
+    question: "请写出分析软件需求的具体步骤。",
+    answer: "分析软件需求的步骤包括：1.建立分析模型；2.识别边界类、控制类和实体类；3.建立用例交互模型（顺序图）；4.建立分析类图模型。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q75", type: "short", lecture: 4, topic: "需求分析",
+    question: "在分析软件需求时，请解释何为控制类和实体类。",
+    answer: "控制类：负责业务逻辑控制和协调，处理用例中的控制流程，协调边界类和实体类之间的交互。实体类：负责持久化数据的存储和管理，代表系统中的业务数据对象。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q76", type: "short", lecture: 5, topic: "软件设计",
+    question: "请写出面向对象的软件设计过程。",
+    answer: "面向对象的软件设计过程包括：1.用例设计：基于用例模型设计交互流程；2.类设计：定义类的属性、方法和关系；3.数据设计：设计数据存储方案；4.体系结构设计：定义系统总体结构和构件关系。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q77", type: "short", lecture: 5, topic: "软件体系结构",
+    question: "软件体系结构设计的任务是什么？",
+    answer: "软件体系结构设计的任务是：确定系统的总体结构，定义子系统或构件及其相互关系，体现系统最早的设计决策，直接决定整个软件系统的质量。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q78", type: "short", lecture: 5, topic: "软件设计",
+    question: "请写出你对'高内聚 - 低耦合'原则的理解。",
+    answer: "高内聚指模块内部元素紧密相关，每个模块只完成一个相对独立的特定功能；低耦合指模块间依赖关系尽量少，模块通过简单接口交互。这一原则有助于提高软件的可维护性、可复用性和可测试性。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q79", type: "short", lecture: 5, topic: "用户界面",
+    question: "请写出用户界面的设计过程。",
+    answer: "用户界面设计过程包括：1.需求分析：了解用户需求和交互场景；2.设计：设计界面布局、导航和交互方式；3.实现：编码实现用户界面；4.评估：测试和评估用户体验，收集反馈改进。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q80", type: "short", lecture: 5, topic: "用户界面",
+    question: "请写出四种人机交互的方式。",
+    answer: "四种人机交互方式：1.文本交互方式（命令行界面）；2.图形化界面交互方式（GUI）；3.语音交互方式；4.姿势交互方式。",
+    difficulty: 1, source: "复习材料"
+  },
+  {
+    id: "q81", type: "short", lecture: 6, topic: "软件测试",
+    question: "请写出软件测试的原理。",
+    answer: "软件测试是通过运行程序代码来发现程序中潜藏缺陷的过程。测试可以证明软件存在缺陷，但不能证明软件是正确的。测试的对象是程序代码。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q82", type: "short", lecture: 6, topic: "软件测试",
+    question: "描述测试用例需要包括哪四个元素。",
+    answer: "测试用例由四元组 (T, S, I, O) 表示：T-测试用例标识，S-前置条件，I-测试输入，O-预期输出。",
+    difficulty: 1, source: "复习材料"
+  },
+  {
+    id: "q83", type: "short", lecture: 6, topic: "软件测试",
+    question: "单元测试的依据和任务是什么？",
+    answer: "单元测试的依据是详细设计文档；任务是验证模块内部逻辑的正确性，确保每个模块按设计要求正确工作。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q84", type: "short", lecture: 6, topic: "软件测试",
+    question: "集成测试和确认测试的依据、参与者分别是什么？",
+    answer: "集成测试：依据设计文档，参与者是开发团队，测试模块间接口。确认测试：依据需求文档，参与者包括用户/客户，测试系统功能是否满足需求。",
+    difficulty: 2, source: "复习材料"
+  },
+
+  // ===== 补充选择题（基于 PPT 和教材内容）=====
+  {
+    id: "q85", type: "choice", lecture: 1, topic: "软件基础",
+    question: "下列关于软件的描述中，哪一项是错误的？",
+    options: {
+      A: "软件不会物理老化，但会逻辑老化",
+      B: "软件的生产受物理定律约束",
+      C: "软件是逻辑制品而非物理制品",
+      D: "软件客户常最初说不清楚需求"
+    },
+    answer: "B",
+    explanation: "软件及其生产不受物理定律约束，这是软件区别于传统物理产品的重要特点。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q86", type: "choice", lecture: 1, topic: "软件分类",
+    question: "Windows 操作系统属于哪类软件？",
+    options: {
+      A: "系统软件",
+      B: "应用软件",
+      C: "支撑软件",
+      D: "开源软件"
+    },
+    answer: "A",
+    explanation: "Windows 操作系统是系统软件，负责管理和控制计算机硬件与系统资源。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q87", type: "choice", lecture: 1, topic: "软件分类",
+    question: "Visual Studio IDE 属于哪类软件？",
+    options: {
+      A: "系统软件",
+      B: "应用软件",
+      C: "支撑软件",
+      D: "商业软件"
+    },
+    answer: "C",
+    explanation: "Visual Studio IDE 是支撑软件，协助开发和维护其他软件的工具软件。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q88", type: "choice", lecture: 2, topic: "软件工程概述",
+    question: "软件工程的三要素是什么？",
+    options: {
+      A: "过程、工具、方法",
+      B: "需求、设计、编码",
+      C: "计划、组织、控制",
+      D: "模型、方法、工具"
+    },
+    answer: "A",
+    explanation: "软件工程三要素是：过程、工具、方法。这是软件工程的基础概念。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q89", type: "choice", lecture: 3, topic: "过程模型",
+    question: "下列哪种过程模型适合需求不明确的项目？",
+    options: {
+      A: "瀑布模型",
+      B: "原型模型",
+      C: "V 模型",
+      D: "增量模型"
+    },
+    answer: "B",
+    explanation: "原型模型的指导思想是快速验证，关注需求确认，适合需求不明确的项目。",
+    difficulty: 2, source: "课堂练习"
+  },
+  {
+    id: "q90", type: "choice", lecture: 3, topic: "过程模型",
+    question: "下列哪种过程模型是文档驱动的？",
+    options: {
+      A: "原型模型",
+      B: "敏捷开发",
+      C: "瀑布模型",
+      D: "迭代模型"
+    },
+    answer: "C",
+    explanation: "瀑布模型是文档驱动的，各阶段按固定顺序依次进行，前一阶段完成后才能进入下一阶段。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q91", type: "choice", lecture: 3, topic: "群体化开发",
+    question: "GitHub 是由哪家公司管辖的？",
+    options: {
+      A: "Google",
+      B: "Microsoft",
+      C: "Apple",
+      D: "Amazon"
+    },
+    answer: "B",
+    explanation: "GitHub 由美国微软公司管辖，不是由中国管辖。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q92", type: "choice", lecture: 4, topic: "需求分析",
+    question: "软件需求不包括下列哪一项？",
+    options: {
+      A: "功能需求",
+      B: "非功能需求",
+      C: "开发约束需求",
+      D: "代码行数需求"
+    },
+    answer: "D",
+    explanation: "软件需求包括功能需求、非功能需求和开发约束需求，不包括代码行数需求。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q93", type: "choice", lecture: 4, topic: "需求工程",
+    question: "需求工程的第一个过程是什么？",
+    options: {
+      A: "需求获取",
+      B: "需求分析",
+      C: "需求验证",
+      D: "需求管理"
+    },
+    answer: "A",
+    explanation: "需求工程包括四个连续过程：需求获取、需求分析、需求验证、需求管理。第一个过程是需求获取。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q94", type: "choice", lecture: 4, topic: "需求分析",
+    question: "在需求分析中，负责系统与外部参与者交互的类是？",
+    options: {
+      A: "边界类",
+      B: "控制类",
+      C: "实体类",
+      D: "接口类"
+    },
+    answer: "A",
+    explanation: "边界类负责系统与外部参与者之间的交互；控制类负责业务逻辑控制；实体类负责数据存储。",
+    difficulty: 2, source: "课堂练习"
+  },
+  {
+    id: "q95", type: "choice", lecture: 5, topic: "软件设计",
+    question: "软件设计的第一步是什么？",
+    options: {
+      A: "体系结构设计",
+      B: "用户界面设计",
+      C: "用例设计",
+      D: "类设计"
+    },
+    answer: "A",
+    explanation: "软件设计的一般过程：1.体系结构设计；2.用户界面设计；3.详细设计（用例设计→类设计→数据设计）。",
+    difficulty: 2, source: "课堂练习"
+  },
+  {
+    id: "q96", type: "choice", lecture: 5, topic: "软件设计",
+    question: "高内聚低耦合原则中，高内聚是指？",
+    options: {
+      A: "模块间依赖关系少",
+      B: "模块内部元素紧密相关",
+      C: "模块接口简单",
+      D: "模块功能复杂"
+    },
+    answer: "B",
+    explanation: "高内聚指模块内部元素紧密相关，每个模块只完成一个相对独立的特定功能；低耦合指模块间依赖关系尽量少。",
+    difficulty: 2, source: "课堂练习"
+  },
+  {
+    id: "q97", type: "choice", lecture: 6, topic: "软件测试",
+    question: "下列哪种测试在开发者的控制环境下进行？",
+    options: {
+      A: "Alpha 测试",
+      B: "Beta 测试",
+      C: "单元测试",
+      D: "集成测试"
+    },
+    answer: "A",
+    explanation: "Alpha 测试在开发者控制的环境中进行，开发者在场观察用户操作；Beta 测试在用户实际使用环境中进行。",
+    difficulty: 2, source: "课堂练习"
+  },
+  {
+    id: "q98", type: "choice", lecture: 6, topic: "软件测试",
+    question: "V 模型中，单元测试对应哪个开发阶段？",
+    options: {
+      A: "需求分析阶段",
+      B: "设计阶段",
+      C: "编码阶段",
+      D: "部署阶段"
+    },
+    answer: "C",
+    explanation: "V 模型将测试活动与开发活动对应起来：单元测试对应编码阶段，集成测试对应设计阶段，确认测试对应需求阶段。",
+    difficulty: 2, source: "课堂练习"
+  },
+  {
+    id: "q99", type: "choice", lecture: 7, topic: "软件维护",
+    question: "在所有维护中，哪种维护所占比重最大？",
+    options: {
+      A: "纠正性维护",
+      B: "改善性维护",
+      C: "适应性维护",
+      D: "预防性维护"
+    },
+    answer: "B",
+    explanation: "在所有维护中，改善性维护所占比重最大，而非纠正性维护。",
+    difficulty: 2, source: "课堂练习"
+  },
+  {
+    id: "q100", type: "choice", lecture: 7, topic: "软件维护",
+    question: "为了使软件适应操作系统升级而进行的维护是？",
+    options: {
+      A: "纠正性维护",
+      B: "改善性维护",
+      C: "适应性维护",
+      D: "预防性维护"
+    },
+    answer: "C",
+    explanation: "适应性维护是指为了使软件适应变化的运行环境（如操作系统升级、硬件更换）而进行的维护活动。",
+    difficulty: 1, source: "课堂练习"
+  },
+
+  // ===== 补充判断题（基于 PPT 和教材内容）=====
+  {
+    id: "q101", type: "judge", lecture: 1, topic: "软件基础",
+    question: "软件会物理老化，需要定期更换。",
+    answer: false,
+    explanation: "错误。软件不会物理老化，但会逻辑老化。软件是逻辑制品，不受物理定律约束。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q102", type: "judge", lecture: 1, topic: "软件基础",
+    question: "软件的生产方式与传统物理产品相同。",
+    answer: false,
+    explanation: "错误。软件的生产方式与传统物理产品不同，软件是逻辑制品，其生产不受物理定律约束。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q103", type: "judge", lecture: 1, topic: "软件分类",
+    question: "微信属于应用软件。",
+    answer: true,
+    explanation: "正确。微信是面向特定应用领域，为用户完成具体任务的应用软件。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q104", type: "judge", lecture: 2, topic: "软件工程概述",
+    question: "软件工程三要素是过程、工具和方法。",
+    answer: true,
+    explanation: "正确。软件工程三要素是：过程、工具、方法。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q105", type: "judge", lecture: 3, topic: "过程模型",
+    question: "瀑布模型适合需求明确的项目。",
+    answer: true,
+    explanation: "正确。瀑布模型是文档驱动的，关注阶段完整性，适合需求明确的项目。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q106", type: "judge", lecture: 3, topic: "过程模型",
+    question: "原型模型适合需求不明确的项目。",
+    answer: true,
+    explanation: "正确。原型模型的指导思想是快速验证，关注需求确认，适合需求不明确的项目。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q107", type: "judge", lecture: 3, topic: "群体化开发",
+    question: "开源软件开发是群体化开发方法的典型代表。",
+    answer: true,
+    explanation: "正确。群体化开发方法是指利用大规模群体的智慧和力量来共同完成软件开发任务，典型代表是开源软件开发。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q108", type: "judge", lecture: 4, topic: "需求分析",
+    question: "软件需求只包括功能需求。",
+    answer: false,
+    explanation: "错误。软件需求包括功能需求、非功能需求和开发约束需求三类。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q109", type: "judge", lecture: 4, topic: "需求工程",
+    question: "需求工程包括需求获取、需求分析、需求验证和需求管理四个过程。",
+    answer: true,
+    explanation: "正确。需求工程包括这四个连续过程。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q110", type: "judge", lecture: 4, topic: "需求分析",
+    question: "控制类负责系统与外部参与者之间的交互。",
+    answer: false,
+    explanation: "错误。边界类负责系统与外部参与者之间的交互；控制类负责业务逻辑控制和协调。",
+    difficulty: 2, source: "课堂练习"
+  },
+  {
+    id: "q111", type: "judge", lecture: 5, topic: "软件设计",
+    question: "软件设计的第一步是体系结构设计。",
+    answer: true,
+    explanation: "正确。软件设计的一般过程：1.体系结构设计；2.用户界面设计；3.详细设计。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q112", type: "judge", lecture: 5, topic: "软件设计",
+    question: "高内聚低耦合原则有助于提高软件的可维护性。",
+    answer: true,
+    explanation: "正确。高内聚低耦合原则有助于提高软件的可维护性、可复用性和可测试性。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q113", type: "judge", lecture: 5, topic: "UML",
+    question: "UML 是一种用于软件设计的标准建模语言。",
+    answer: true,
+    explanation: "正确。UML 是软件设计的标准建模语言。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q114", type: "judge", lecture: 6, topic: "软件测试",
+    question: "软件测试可以证明软件是正确的。",
+    answer: false,
+    explanation: "错误。软件测试可以发现缺陷，但不能证明软件是正确的。这是测试的基本原理。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q115", type: "judge", lecture: 6, topic: "软件测试",
+    question: "Alpha 测试在用户实际使用环境中进行。",
+    answer: false,
+    explanation: "错误。Alpha 测试在开发者控制的环境中进行；Beta 测试在用户实际使用环境中进行。",
+    difficulty: 2, source: "课堂练习"
+  },
+  {
+    id: "q116", type: "judge", lecture: 6, topic: "软件测试",
+    question: "Beta 测试由用户独立使用并反馈问题。",
+    answer: true,
+    explanation: "正确。Beta 测试是在用户实际使用环境中进行公开测试的软件版本，由用户独立使用并反馈问题。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q117", type: "judge", lecture: 7, topic: "软件维护",
+    question: "软件维护只包括纠正性维护。",
+    answer: false,
+    explanation: "错误。软件维护包括纠正性维护、改善性维护和适应性维护三种类型。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q118", type: "judge", lecture: 7, topic: "软件维护",
+    question: "改善性维护是为了改进软件的性能和可维护性。",
+    answer: true,
+    explanation: "正确。改善性维护是指为了改进软件的性能、可维护性或其他质量属性而进行的维护活动。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q119", type: "judge", lecture: 7, topic: "软件演化",
+    question: "软件演化是指针对软件的大规模功能增强和结构调整。",
+    answer: true,
+    explanation: "正确。软件演化是指针对软件的大规模功能增强和结构调整，以实现变化的软件需求或提高软件系统的质量。",
+    difficulty: 1, source: "课堂练习"
+  },
+  {
+    id: "q120", type: "judge", lecture: 7, topic: "软件维护",
+    question: "软件逻辑老化是物理层面的老化。",
+    answer: false,
+    explanation: "错误。软件逻辑老化是指软件在长期运行过程中，由于外部环境变化或业务需求变化，导致原有逻辑不再适用的现象。它不是物理老化，是逻辑层面的老化。",
+    difficulty: 2, source: "课堂练习"
+  },
+
+  // ===== 补充名词解释（基于复习材料）=====
+  {
+    id: "q121", type: "definition", lecture: 2, topic: "软件工程概述",
+    question: "信息隐藏原则",
+    answer: "模块内部的信息（数据和方法）对外部模块是不可见的，模块只通过接口与外部交互，以降低模块间的依赖，提高可维护性。",
+    difficulty: 1, source: "复习材料"
+  },
+  {
+    id: "q122", type: "definition", lecture: 2, topic: "软件工程概述",
+    question: "双向追踪原则",
+    answer: "需求与设计之间、设计与代码之间应建立双向追踪关系，确保每个需求都有对应的设计和实现，每个实现都可追溯到需求。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q123", type: "definition", lecture: 3, topic: "群体化开发",
+    question: "群体化开发方法",
+    answer: "群体化开发方法是指利用大规模群体的智慧和力量来共同完成软件开发任务的方法。典型代表是开源软件开发。",
+    difficulty: 1, source: "复习材料"
+  },
+  {
+    id: "q124", type: "definition", lecture: 4, topic: "需求分析",
+    question: "边界类",
+    answer: "边界类负责系统与外部参与者之间的交互，处理用户输入和系统输出。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q125", type: "definition", lecture: 4, topic: "需求分析",
+    question: "控制类",
+    answer: "控制类负责业务逻辑控制和协调，处理用例中的控制流程，协调边界类和实体类之间的交互。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q126", type: "definition", lecture: 4, topic: "需求分析",
+    question: "实体类",
+    answer: "实体类负责持久化数据的存储和管理，代表系统中的业务数据对象。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q127", type: "definition", lecture: 5, topic: "软件设计",
+    question: "构件",
+    answer: "构件是软件系统中可独立部署、可替换的组成部分，它遵循一组公开的接口规范，可以被其他软件组件复用和组合。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q128", type: "definition", lecture: 6, topic: "软件测试",
+    question: "回归测试",
+    answer: "回归测试是在软件修改后重新执行之前的测试用例，以确保修改没有引入新的缺陷并且原有功能仍然正常工作。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q129", type: "definition", lecture: 7, topic: "软件维护",
+    question: "纠正性维护",
+    answer: "纠正性维护是指在软件交付后，为修复已发现的缺陷而进行的维护活动。",
+    difficulty: 1, source: "复习材料"
+  },
+  {
+    id: "q130", type: "definition", lecture: 7, topic: "软件维护",
+    question: "软件逻辑老化",
+    answer: "软件逻辑老化是指软件在长期运行过程中，由于外部环境变化或业务需求变化，导致原有逻辑不再适用的现象。它不是物理老化，是逻辑层面的老化。",
+    difficulty: 2, source: "复习材料"
+  },
+
+  // ===== 补充简答题（基于复习材料和作业）=====
+  {
+    id: "q131", type: "short", lecture: 1, topic: "软件基础",
+    question: "请解释软件不会物理老化但会逻辑老化的含义。",
+    answer: "软件不会物理老化是指软件作为逻辑制品，不受物理定律约束，不会因为常年运行而出现物理层面的老化或磨损。但软件会逻辑老化，是指在长期运行过程中，由于外部环境变化（如操作系统升级、硬件更换）或业务需求变化，导致原有逻辑不再适用的现象。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q132", type: "short", lecture: 1, topic: "软件基础",
+    question: "什么是软件利益相关者？包括哪些人？",
+    answer: "软件利益相关者是指与软件系统有利益关系的个人或组织。包括：软件的受益者（客户、用户）、开发者和测试人员、以及与软件交互的其他系统（如物理硬件系统、遗留系统）。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q133", type: "short", lecture: 2, topic: "软件工程概述",
+    question: "什么是模块化原则？为什么要追求高内聚低耦合？",
+    answer: "模块化原则是将软件系统划分为若干个相对独立的模块，每个模块完成一个特定的子功能，所有模块按某种方式组装成一个整体。追求高内聚低耦合是因为：高内聚使每个模块功能单一明确，易于理解和维护；低耦合减少模块间依赖，降低修改一个模块对其他模块的影响，提高软件的可维护性、可复用性和可测试性。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q134", type: "short", lecture: 3, topic: "过程模型",
+    question: "请比较增量模型和迭代模型的异同。",
+    answer: "相同点：都是分阶段开发，都支持需求变化。不同点：增量模型每次增加新功能（横向扩展），指导思想是分批交付，关注功能逐步增加；迭代模型每次改进已有功能（纵向深化），指导思想是反复改进，关注逐步完善。增量模型适合可分块交付的系统，迭代模型适合需求会变化的项目。",
+    difficulty: 3, source: "复习材料"
+  },
+  {
+    id: "q135", type: "short", lecture: 3, topic: "群体化开发",
+    question: "什么是 issue？它在群体化开发中起什么作用？",
+    answer: "issue 中文意思是'问题'或'议题'。在群体化开发中，issue 具体指开发过程中的问题报告、功能请求或任务项，用于跟踪和管理开发进度。通过 issue 可以记录 bug、提出新功能建议、分配任务给开发者，是群体化开发中重要的协作工具。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q136", type: "short", lecture: 4, topic: "需求分析",
+    question: "请解释功能需求、非功能需求和开发约束需求的区别。",
+    answer: "功能需求描述软件应该做什么，即软件的功能；非功能需求描述软件的质量要求，如性能、安全性、可用性等；开发约束需求描述对软件开发的限制，如成本、进度、技术选型、遵循标准及安全性等方面的要求。功能需求关注'做什么'，非功能需求关注'做得怎么样'，开发约束需求关注'如何开发'。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q137", type: "short", lecture: 4, topic: "需求工程",
+    question: "需求获取的步骤是什么？",
+    answer: "需求获取的步骤包括：1.识别利益相关者：确定与软件系统有利益关系的个人或组织；2.确定需求获取方式：如访谈、问卷、观察、工作坊等；3.收集需求信息：从利益相关者处收集需求；4.整理和分析需求：对收集到的需求进行分类、优先级排序；5.形成需求文档：将需求整理成文档，供后续开发使用。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q138", type: "short", lecture: 4, topic: "需求分析",
+    question: "分析软件需求的步骤是什么？",
+    answer: "分析软件需求的步骤包括：1.建立分析模型：理解系统功能和交互；2.识别边界类、控制类和实体类：边界类处理系统交互，控制类处理业务逻辑，实体类管理数据；3.建立用例交互模型（顺序图）：描述用例中对象之间的交互顺序；4.建立分析类图模型：定义类的属性、方法和关系。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q139", type: "short", lecture: 5, topic: "软件设计",
+    question: "请解释边界类、控制类和实体类的作用。",
+    answer: "边界类：负责系统与外部参与者之间的交互，处理用户输入和系统输出；控制类：负责业务逻辑控制和协调，处理用例中的控制流程，协调边界类和实体类之间的交互；实体类：负责持久化数据的存储和管理，代表系统中的业务数据对象。这三种类分别对应边界层、控制层和实体层。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q140", type: "short", lecture: 5, topic: "软件体系结构",
+    question: "软件体系结构设计的重要性是什么？",
+    answer: "软件体系结构设计的重要性体现在：1.确定系统的总体结构，定义子系统或构件及其相互关系；2.体现系统最早的设计决策，这些决策往往难以更改；3.直接决定整个软件系统的质量，如可扩展性、可维护性、性能等；4.为编码实现工作提供具体指导。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q141", type: "short", lecture: 6, topic: "软件测试",
+    question: "请解释 V 模型的含义。",
+    answer: "V 模型将测试活动与开发活动对应起来，形成 V 字形：V 模型左侧是开发活动，右侧是测试活动。单元测试对应编码阶段，测试对象是程序模块；集成测试对应设计阶段，测试对象是模块间接口；确认测试（系统测试）对应需求阶段，测试对象是系统功能。V 模型强调测试计划的重要性，每个开发阶段都有对应的测试阶段。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q142", type: "short", lecture: 6, topic: "软件测试",
+    question: "请比较 Alpha 测试和 Beta 测试。",
+    answer: "Alpha 测试在开发者控制的环境中进行，开发者在场观察用户操作，记录问题；Beta 测试在用户实际使用环境中进行，用户独立使用并反馈问题。Alpha 先于 Beta 进行，Alpha 测试环境更接近开发环境，Beta 测试环境是真实的用户环境。两者都是验收测试的形式，目的是发现只有用户才能发现的缺陷。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q143", type: "short", lecture: 7, topic: "软件维护",
+    question: "请解释纠正性维护、改善性维护和适应性维护的区别。",
+    answer: "纠正性维护是指在软件交付后，为修复已发现的缺陷而进行的维护活动；改善性维护是指为了改进软件的性能、可维护性或其他质量属性而进行的维护活动；适应性维护是指为了使软件适应变化的运行环境（如操作系统升级、硬件更换）而进行的维护活动。纠正性维护修复错误，改善性维护改进功能，适应性维护适应环境变化。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q144", type: "short", lecture: 7, topic: "软件演化",
+    question: "什么是软件演化？为什么需要软件演化？",
+    answer: "软件演化是指针对软件的大规模功能增强和结构调整，以实现变化的软件需求或提高软件系统的质量。需要软件演化的原因：1.业务需求变化，需要增加新功能；2.技术环境变化，需要适应新的操作系统、硬件等；3.用户数量增加，需要提高性能；4.发现安全漏洞，需要加强安全性。软件演化是软件生命周期的必然阶段。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q145", type: "short", lecture: 4, topic: "需求分析",
+    question: "请解释需求文档的重要性。",
+    answer: "需求文档的重要性体现在：1.确保开发团队和客户对需求理解一致，避免误解；2.为后续设计和开发提供依据，指导开发工作；3.作为测试的依据，验证软件是否满足需求；4.为软件维护提供参考，帮助理解原有需求；5.作为项目验收的标准。需求文档是软件开发过程中最重要的文档之一。",
+    difficulty: 2, source: "复习材料"
+  },
+
+  // ===== 作业题（基于作业答案）=====
+  {
+    id: "q146", type: "short", lecture: 4, topic: "需求分析",
+    question: "在需求描述中，'用户在使用系统之前必须注册'这句话有什么问题？",
+    answer: "这句话有问题，'使用'二字比较具体指代不是很准确，其实是使用之前必须登录，登录之前要已经注册过。应该改为'用户在使用系统前必须登录，登录前必须已经注册过'。",
+    difficulty: 2, source: "作业"
+  },
+  {
+    id: "q147", type: "short", lecture: 4, topic: "需求分析",
+    question: "在需求描述中，'用户注册必须提供用户名、账号和用户类别'这句话有什么问题？",
+    answer: "这句话有问题：1.'用户名'和'账号'是一回事，账号即用户名，重复了；2.'用户类别'没有说清楚有哪些，比如这个软件也许是'学生、教师和管理员'三类；3.用户注册还必须提供密码，这句话漏掉了密码。",
+    difficulty: 2, source: "作业"
+  },
+  {
+    id: "q148", type: "short", lecture: 6, topic: "软件测试",
+    question: "基本路径测试方法中，如何计算基本路径数量？",
+    answer: "基本路径数量 = 边的数量 - 节点的数量 + 2。这是 McCabe 环路复杂度的计算公式。例如，如果流图有 6 条边和 5 个节点，则基本路径数量为 6-5+2=3 条。",
+    difficulty: 2, source: "作业"
+  },
+  {
+    id: "q149", type: "short", lecture: 6, topic: "软件测试",
+    question: "等价类划分方法中，如何设计测试用例？",
+    answer: "等价类划分方法设计测试用例的原则：1.用尽可能少的测试用例覆盖尽可能多的有效等价类；2.为每个无效等价类设计 1 个测试用例。这样可以确保测试用例数量最少，同时覆盖所有等价类。有效等价类是指符合需求的输入，无效等价类是指不符合需求的输入。",
+    difficulty: 2, source: "作业"
+  },
+  {
+    id: "q150", type: "short", lecture: 5, topic: "软件设计",
+    question: "在 UML 类图中，依赖关系和关联关系有什么区别？",
+    answer: "依赖关系表示一个类使用另一个类的功能，但不直接持有对方的实例。它是一种临时的、弱的关系，通常用于方法调用。关联关系表示一个类直接持有另一个类的实例，并与之交互。它是一种持久的、强的关系，表示类之间的直接联系。依赖关系用虚线箭头表示，关联关系用实线表示。",
+    difficulty: 3, source: "复习材料"
+  },
+  {
+    id: "q151", type: "short", lecture: 6, topic: "编码",
+    question: "请写出 5 条标识符命名规范。",
+    answer: "1.见名知意：变量名应该有意义，如用 studentCount 而非 sc；2.不使用编程语言保留字：如不能用 class、int 等作为变量名；3.长度适当：不宜过长或过短，要在可读性和简洁性之间平衡；4.统一命名风格：如统一使用驼峰命名法（studentCount）或下划线命名法（student_count）；5.避免使用易混淆的字符：如 l 和 1，O 和 0，避免造成阅读困难。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q152", type: "short", lecture: 6, topic: "软件测试",
+    question: "请解释黑盒测试和白盒测试的区别。",
+    answer: "黑盒测试（功能测试）：不关注程序内部结构，只关注程序的功能是否符合需求。测试用例基于需求和规格说明设计。常用方法有等价类划分、边界值分析等。白盒测试（结构测试）：关注程序内部结构和逻辑，测试用例基于程序代码设计。常用方法有语句覆盖、分支覆盖、基本路径测试等。黑盒测试在系统测试阶段使用，白盒测试在单元测试阶段使用。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q153", type: "short", lecture: 6, topic: "软件测试",
+    question: "请解释等价类划分方法的基本思想。",
+    answer: "等价类划分方法的基本思想是将输入数据划分为若干个等价类，每个等价类中的所有输入数据对程序的处理逻辑是等价的。从每个等价类中选取少数代表性数据作为测试用例。等价类分为有效等价类（符合需求的输入）和无效等价类（不符合需求的输入）。这样可以减少测试用例数量，同时保证测试覆盖率。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q154", type: "short", lecture: 6, topic: "软件测试",
+    question: "请解释基本路径测试方法的步骤。",
+    answer: "基本路径测试方法的步骤：1.绘制程序流图：将程序流程图转化为流图，节点表示程序中的语句或判定，边表示控制流；2.计算环路复杂度：V(G) = 边数 - 节点数 + 2；3.确定基本路径集合：根据环路复杂度确定基本路径数量，找出所有独立的路径；4.设计测试用例：为每条基本路径设计测试用例，确保覆盖所有路径。",
+    difficulty: 3, source: "复习材料"
+  },
+  {
+    id: "q155", type: "short", lecture: 4, topic: "需求分析",
+    question: "请解释用例图的作用和组成元素。",
+    answer: "用例图用于描述系统的功能和用户（参与者）之间的交互。组成元素包括：1.参与者（Actor）：与系统交互的外部实体，可以是人或其他系统；2.用例（Use Case）：系统提供的一个功能单元；3.关系：包括关联关系（参与者和用例之间）、包含关系（<<include>>）、扩展关系（<<extend>>）和泛化关系。用例图帮助理解系统功能和用户需求。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q156", type: "short", lecture: 4, topic: "需求分析",
+    question: "请解释顺序图的作用和组成元素。",
+    answer: "顺序图用于描述对象之间的交互顺序，强调消息传递的时间顺序。组成元素包括：1.对象：参与交互的实体，用垂直生命线表示；2.消息：对象之间的通信，用水平箭头表示；3.生命线：表示对象在时间上的存在；4.激活期：表示对象执行操作的时间段；5.片段：如 alt（条件）、loop（循环）等。顺序图帮助理解用例中对象之间的交互流程。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q157", type: "short", lecture: 5, topic: "软件设计",
+    question: "请解释分析类图的作用和组成元素。",
+    answer: "分析类图用于描述系统的静态结构，包括类的属性、方法和关系。组成元素包括：1.类：用矩形表示，分为类名、属性和方法三部分；2.关系：包括关联、依赖、泛化、实现等；3.边界类、控制类、实体类：分别对应系统的交互层、逻辑层和数据层。分析类图帮助理解系统的静态结构和类之间的关系，为详细设计提供基础。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q158", type: "short", lecture: 5, topic: "用户界面",
+    question: "请写出用户界面设计的原则。",
+    answer: "用户界面设计的原则：1.一致性：保持界面风格、布局、交互方式的一致性；2.简洁性：界面简洁明了，避免不必要的复杂性；3.反馈性：及时给用户反馈，让用户了解操作结果；4.容错性：防止用户犯错，提供撤销功能；5.易用性：界面直观，易于学习和使用；6.美观性：界面美观，提升用户体验。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q159", type: "short", lecture: 6, topic: "软件实现",
+    question: "软件实现的任务包括哪些活动？",
+    answer: "软件实现的任务包括：1.编码：将软件设计转化为可执行的程序代码；2.单元测试：验证每个模块的正确性；3.代码审查：检查代码质量，发现潜在问题；4.集成：将模块组装成完整的系统；5.文档编写：编写代码注释和技术文档。软件实现是将设计转化为可运行软件的关键阶段。",
+    difficulty: 2, source: "复习材料"
+  },
+  {
+    id: "q160", type: "short", lecture: 6, topic: "软件部署",
+    question: "软件部署的任务是什么？",
+    answer: "软件部署的任务是将开发完成的软件系统安装到运行环境并使其可用。包括：1.安装软件：将软件安装到目标服务器或用户设备；2.配置环境：配置数据库、网络等运行环境；3.数据迁移：将旧系统数据迁移到新系统；4.培训用户：培训用户如何使用新系统；5.上线运行：正式启动新系统。",
+    difficulty: 2, source: "复习材料"
+  }
+];
+  
+  // ===== APP STATE =====
+  let state = {
+    currentPage: 'home',
+    currentQuiz: null,
+    wrongAnswers: [],
+    masteredCards: [],
+    quizStats: { total: 0, correct: 0 }
+  };
+  
+  // Load state from localStorage
+  function loadState() {
+    const saved = localStorage.getItem('seReviewState');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state.wrongAnswers = parsed.wrongAnswers || [];
+      state.masteredCards = parsed.masteredCards || [];
+      state.quizStats = parsed.quizStats || { total: 0, correct: 0 };
+    }
+    updateStats();
+  }
+  
+  // Save state to localStorage
+  function saveState() {
+    localStorage.setItem('seReviewState', JSON.stringify({
+      wrongAnswers: state.wrongAnswers,
+      masteredCards: state.masteredCards,
+      quizStats: state.quizStats
+    }));
+  }
+  
+  // Update stats display
+  function updateStats() {
+    document.getElementById('totalCards').textContent = knowledgeCards.length;
+    document.getElementById('totalQuestions').textContent = quizBank.length;
+    document.getElementById('correctCount').textContent = state.quizStats.correct;
+    const rate = state.quizStats.total > 0 
+      ? Math.round(state.quizStats.correct / state.quizStats.total * 100) 
+      : 0;
+    document.getElementById('correctRate').textContent = rate + '%';
+  }
+  
+  // ===== NAVIGATION =====
+  function showPage(page) {
+    state.currentPage = page;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(page).classList.add('active');
+    event.target.classList.add('active');
+    
+    if (page === 'knowledge') renderKnowledge();
+    if (page === 'wrong') renderWrong();
+    if (page === 'quiz') {
+      document.getElementById('quizSetup').style.display = 'block';
+      document.getElementById('quizContainer').style.display = 'none';
+    }
+  }
+  
+  // ===== KNOWLEDGE CARDS =====
+  function renderKnowledge() {
+    const lectureFilter = document.getElementById('lectureFilter').value;
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    
+    // Populate lecture filter
+    const lectures = [...new Set(knowledgeCards.map(c => c.lecture))];
+    const lectureSelect = document.getElementById('lectureFilter');
+    if (lectureSelect.children.length <= 1) {
+      lectures.forEach(l => {
+        const opt = document.createElement('option');
+        opt.value = l;
+        opt.textContent = l;
+        lectureSelect.appendChild(opt);
+      });
+    }
+    
+    // Filter cards
+    const filtered = knowledgeCards.filter(card => {
+      const matchLecture = !lectureFilter || card.lecture === lectureFilter;
+      const matchSearch = !searchTerm || 
+        card.title.toLowerCase().includes(searchTerm) ||
+        card.definition.toLowerCase().includes(searchTerm) ||
+        card.topic.toLowerCase().includes(searchTerm);
+      return matchLecture && matchSearch;
+    });
+    
+    // Render cards
+    const grid = document.getElementById('cardsGrid');
+    grid.innerHTML = filtered.map(card => {
+      const isMastered = state.masteredCards.includes(card.id);
+      return `
+        <div class="knowledge-card ${isMastered ? 'mastered' : ''}" onclick="showCardDetail('${card.id}')">
+          <div class="card-header">
+            <span class="card-lecture">${card.lecture}</span>
+            <span class="card-status">${isMastered ? '✓' : ''}</span>
+          </div>
+          <div class="card-title">${card.title}</div>
+          <div class="card-topic">${card.topic}</div>
+          <div class="card-definition">${card.definition}</div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  function showCardDetail(id) {
+    const card = knowledgeCards.find(c => c.id === id);
+    if (!card) return;
+    
+    const isMastered = state.masteredCards.includes(card.id);
+    
+    const modal = document.getElementById('modal');
+    modal.innerHTML = `
+      <div class="modal-header">
+        <h2 class="modal-title">${card.title}</h2>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">章节</div>
+        <div>${card.lecture} - ${card.topic}</div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">定义</div>
+        <div class="modal-definition">${card.definition}</div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">要点</div>
+        <ul class="modal-points">
+          ${card.keyPoints.map(p => `<li>${p}</li>`).join('')}
+        </ul>
+      </div>
+      ${card.examTip ? `
+      <div class="modal-section">
+        <div class="modal-section-title">考试重点</div>
+        <div class="modal-tip">${card.examTip}</div>
+      </div>
+      ` : ''}
+      ${card.pageRef ? `
+      <div class="modal-section">
+        <div class="modal-section-title">教材页码</div>
+        <div>${card.pageRef}</div>
+      </div>
+      ` : ''}
+      <div class="modal-actions">
+        <button class="btn ${isMastered ? 'btn-secondary' : 'btn-success'}" onclick="toggleMastered('${card.id}')">
+          ${isMastered ? '取消掌握' : '标记为已掌握'}
+        </button>
+      </div>
+    `;
+    
+    document.getElementById('modalOverlay').classList.add('active');
+  }
+  
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+  }
+  
+  function toggleMastered(id) {
+    const idx = state.masteredCards.indexOf(id);
+    if (idx >= 0) {
+      state.masteredCards.splice(idx, 1);
+    } else {
+      state.masteredCards.push(id);
+    }
+    saveState();
+    showCardDetail(id);
+    renderKnowledge();
+  }
+  
+  // ===== QUIZ =====
+  function startQuiz(type) {
+    let questions = [];
+    if (type === 'all') {
+      questions = [...quizBank];
+    } else if (type === 'choice') {
+      questions = quizBank.filter(q => q.type === 'choice');
+    } else if (type === 'judge') {
+      questions = quizBank.filter(q => q.type === 'judge');
+    } else if (type === 'definition') {
+      questions = quizBank.filter(q => q.type === 'definition');
+    } else if (type === 'short') {
+      questions = quizBank.filter(q => q.type === 'short');
+    } else if (type === 'random') {
+      questions = shuffle([...quizBank]).slice(0, 20);
+    }
+    
+    if (questions.length === 0) {
+      alert('没有题目！');
+      return;
+    }
+    
+    state.currentQuiz = {
+      questions: questions,
+      currentIdx: 0,
+      answers: [],
+      startTime: Date.now()
+    };
+    
+    document.getElementById('quizSetup').style.display = 'none';
+    document.getElementById('quizContainer').style.display = 'block';
+    renderQuestion();
+  }
+  
+  function renderQuestion() {
+    const quiz = state.currentQuiz;
+    if (!quiz) return;
+    
+    const q = quiz.questions[quiz.currentIdx];
+    const container = document.getElementById('quizContainer');
+    
+    const progress = ((quiz.currentIdx + 1) / quiz.questions.length * 100).toFixed(0);
+    
+    let questionHTML = `
+      <div class="quiz-progress">
+        <span>${quiz.currentIdx + 1} / ${quiz.questions.length}</span>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${progress}%"></div>
+        </div>
+        <span>${progress}%</span>
+      </div>
+      <div class="question-card">
+        <div class="question-type">${getTypeName(q.type)}</div>
+        <div class="question-text">${q.question}</div>
+    `;
+    
+    if (q.type === 'choice') {
+      questionHTML += `<ul class="options-list">`;
+      for (const [key, value] of Object.entries(q.options)) {
+        questionHTML += `
+          <li class="option-item" onclick="selectOption('${key}')">
+            <span class="option-label">${key}</span>
+            <span>${value}</span>
+          </li>
+        `;
+      }
+      questionHTML += `</ul>`;
+    } else if (q.type === 'judge') {
+      questionHTML += `
+        <div class="judge-options">
+          <button class="judge-btn" onclick="selectJudge(true)">✓ 正确</button>
+          <button class="judge-btn" onclick="selectJudge(false)">✗ 错误</button>
+        </div>
+      `;
+    } else if (q.type === 'definition' || q.type === 'short') {
+      questionHTML += `
+        <textarea class="short-answer-area" id="shortAnswer" placeholder="请输入你的答案..."></textarea>
+      `;
+    }
+    
+    questionHTML += `</div>`;
+    
+    // Actions
+    questionHTML += `
+      <div class="quiz-actions">
+        <button class="btn btn-secondary" onclick="prevQuestion()" ${quiz.currentIdx === 0 ? 'disabled' : ''}>上一题</button>
+        <button class="btn btn-primary" onclick="submitAnswer()">提交答案</button>
+        <button class="btn btn-secondary" onclick="nextQuestion()" ${quiz.currentIdx === quiz.questions.length - 1 ? 'disabled' : ''}>下一题</button>
+      </div>
+    `;
+    
+    container.innerHTML = questionHTML;
+  }
+  
+  function getTypeName(type) {
+    const names = {
+      choice: '选择题',
+      judge: '判断题',
+      definition: '名词解释',
+      short: '简答题'
+    };
+    return names[type] || type;
+  }
+  
+  function selectOption(key) {
+    document.querySelectorAll('.option-item').forEach(item => {
+      item.classList.remove('selected');
+    });
+    event.currentTarget.classList.add('selected');
+    state.currentQuiz.currentAnswer = key;
+  }
+  
+  function selectJudge(value) {
+    document.querySelectorAll('.judge-btn').forEach(btn => {
+      btn.classList.remove('selected');
+    });
+    event.currentTarget.classList.add('selected');
+    state.currentQuiz.currentAnswer = value;
+  }
+  
+  function submitAnswer() {
+    const quiz = state.currentQuiz;
+    const q = quiz.questions[quiz.currentIdx];
+    const userAnswer = quiz.currentAnswer;
+    
+    if (userAnswer === undefined || userAnswer === null) {
+      alert('请先选择或输入答案！');
+      return;
+    }
+    
+    let isCorrect = false;
+    let correctAnswer = '';
+    
+    if (q.type === 'choice') {
+      isCorrect = userAnswer === q.answer;
+      correctAnswer = q.answer;
+    } else if (q.type === 'judge') {
+      isCorrect = userAnswer === q.answer;
+      correctAnswer = q.answer ? '正确' : '错误';
+    } else if (q.type === 'definition' || q.type === 'short') {
+      // For short answer, just show the correct answer
+      isCorrect = false; // Mark as incorrect to show answer
+      correctAnswer = q.answer;
+    }
+    
+    // Update stats
+    state.quizStats.total++;
+    if (isCorrect) {
+      state.quizStats.correct++;
+    } else {
+      // Add to wrong answers
+      if (!state.wrongAnswers.find(w => w.id === q.id)) {
+        state.wrongAnswers.push({
+          id: q.id,
+          question: q.question,
+          type: q.type,
+          userAnswer: userAnswer,
+          correctAnswer: correctAnswer,
+          explanation: q.explanation
+        });
+      }
+    }
+    
+    saveState();
+    updateStats();
+    
+    // Show explanation
+    showExplanation(q, isCorrect, correctAnswer);
+  }
+  
+  function showExplanation(q, isCorrect, correctAnswer) {
+    const container = document.getElementById('quizContainer');
+    const explanationHTML = `
+      <div class="explanation">
+        <div class="explanation-title">${isCorrect ? '✓ 回答正确！' : '✗ 回答错误'}</div>
+        <div class="explanation-text">
+          <strong>正确答案：</strong>${correctAnswer}<br><br>
+          <strong>解析：</strong>${q.explanation || '暂无解析'}
+        </div>
+      </div>
+      <div class="quiz-actions" style="margin-top: 20px;">
+        <button class="btn btn-primary" onclick="nextQuestion()">
+          ${state.currentQuiz.currentIdx === state.currentQuiz.questions.length - 1 ? '完成练习' : '下一题'}
+        </button>
+      </div>
+    `;
+    
+    container.innerHTML += explanationHTML;
+    
+    // Disable further interaction
+    document.querySelectorAll('.option-item, .judge-btn').forEach(el => {
+      el.style.pointerEvents = 'none';
+    });
+  }
+  
+  function nextQuestion() {
+    const quiz = state.currentQuiz;
+    if (quiz.currentIdx < quiz.questions.length - 1) {
+      quiz.currentIdx++;
+      quiz.currentAnswer = undefined;
+      renderQuestion();
+    } else {
+      // Finish quiz
+      const correct = state.quizStats.correct;
+      const total = state.quizStats.total;
+      const rate = total > 0 ? Math.round(correct / total * 100) : 0;
+      
+      alert(`练习完成！\n总题数：${quiz.questions.length}\n正确率：${rate}%`);
+      
+      document.getElementById('quizSetup').style.display = 'block';
+      document.getElementById('quizContainer').style.display = 'none';
+      state.currentQuiz = null;
+    }
+  }
+  
+  function prevQuestion() {
+    const quiz = state.currentQuiz;
+    if (quiz.currentIdx > 0) {
+      quiz.currentIdx--;
+      quiz.currentAnswer = undefined;
+      renderQuestion();
+    }
+  }
+  
+  // ===== WRONG ANSWERS =====
+  function renderWrong() {
+    const list = document.getElementById('wrongList');
+    if (state.wrongAnswers.length === 0) {
+      list.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">暂无错题，继续加油！</p>';
+      return;
+    }
+    
+    list.innerHTML = state.wrongAnswers.map(w => `
+      <div class="wrong-item">
+        <div class="wrong-item-header">
+          <span class="wrong-item-type">${getTypeName(w.type)}</span>
+          <button class="btn btn-secondary" onclick="removeWrong('${w.id}')">移除</button>
+        </div>
+        <div class="wrong-item-question">${w.question}</div>
+        <div class="wrong-item-answer">正确答案：${w.correctAnswer}</div>
+        <div class="wrong-item-explanation">${w.explanation || '暂无解析'}</div>
+      </div>
+    `).join('');
+  }
+  
+  function removeWrong(id) {
+    state.wrongAnswers = state.wrongAnswers.filter(w => w.id !== id);
+    saveState();
+    renderWrong();
+  }
+  
+  // ===== UTILITIES =====
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+  
+  // ===== INIT =====
+  loadState();
+  </script>
+</body>
+</html>
